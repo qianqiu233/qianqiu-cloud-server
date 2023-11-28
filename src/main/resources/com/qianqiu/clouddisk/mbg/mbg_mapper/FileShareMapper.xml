@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qianqiu.clouddisk.mbg.mbg_mapper.FileShareMapper">
+  <resultMap id="BaseResultMap" type="com.qianqiu.clouddisk.mbg.mbg_model.FileShare">
+    <id column="share_id" jdbcType="VARCHAR" property="shareId" />
+    <result column="file_id" jdbcType="VARCHAR" property="fileId" />
+    <result column="user_id" jdbcType="VARCHAR" property="userId" />
+    <result column="valid_type" jdbcType="BIT" property="validType" />
+    <result column="expire_time" jdbcType="TIMESTAMP" property="expireTime" />
+    <result column="share_time" jdbcType="TIMESTAMP" property="shareTime" />
+    <result column="code" jdbcType="VARCHAR" property="code" />
+    <result column="show_count" jdbcType="INTEGER" property="showCount" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    share_id, file_id, user_id, valid_type, expire_time, share_time, code, show_count
+  </sql>
+  <select id="selectByExample" parameterType="com.qianqiu.clouddisk.mbg.mbg_model.FileShareExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from file_share
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from file_share
+    where share_id = #{shareId,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from file_share
+    where share_id = #{shareId,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.qianqiu.clouddisk.mbg.mbg_model.FileShareExample">
+    delete from file_share
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.qianqiu.clouddisk.mbg.mbg_model.FileShare">
+    insert into file_share (share_id, file_id, user_id, 
+      valid_type, expire_time, share_time, 
+      code, show_count)
+    values (#{shareId,jdbcType=VARCHAR}, #{fileId,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR}, 
+      #{validType,jdbcType=BIT}, #{expireTime,jdbcType=TIMESTAMP}, #{shareTime,jdbcType=TIMESTAMP}, 
+      #{code,jdbcType=VARCHAR}, #{showCount,jdbcType=INTEGER})
+  </insert>
+  <insert id="insertSelective" parameterType="com.qianqiu.clouddisk.mbg.mbg_model.FileShare">
+    insert into file_share
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="shareId != null">
+        share_id,
+      </if>
+      <if test="fileId != null">
+        file_id,
+      </if>
+      <if test="userId != null">
+        user_id,
+      </if>
+      <if test="validType != null">
+        valid_type,
+      </if>
+      <if test="expireTime != null">
+        expire_time,
+      </if>
+      <if test="shareTime != null">
+        share_time,
+      </if>
+      <if test="code != null">
+        code,
+      </if>
+      <if test="showCount != null">
+        show_count,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="shareId != null">
+        #{shareId,jdbcType=VARCHAR},
+      </if>
+      <if test="fileId != null">
+        #{fileId,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null">
+        #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="validType != null">
+        #{validType,jdbcType=BIT},
+      </if>
+      <if test="expireTime != null">
+        #{expireTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="shareTime != null">
+        #{shareTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="code != null">
+        #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="showCount != null">
+        #{showCount,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.qianqiu.clouddisk.mbg.mbg_model.FileShareExample" resultType="java.lang.Long">
+    select count(*) from file_share
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update file_share
+    <set>
+      <if test="row.shareId != null">
+        share_id = #{row.shareId,jdbcType=VARCHAR},
+      </if>
+      <if test="row.fileId != null">
+        file_id = #{row.fileId,jdbcType=VARCHAR},
+      </if>
+      <if test="row.userId != null">
+        user_id = #{row.userId,jdbcType=VARCHAR},
+      </if>
+      <if test="row.validType != null">
+        valid_type = #{row.validType,jdbcType=BIT},
+      </if>
+      <if test="row.expireTime != null">
+        expire_time = #{row.expireTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="row.shareTime != null">
+        share_time = #{row.shareTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="row.code != null">
+        code = #{row.code,jdbcType=VARCHAR},
+      </if>
+      <if test="row.showCount != null">
+        show_count = #{row.showCount,jdbcType=INTEGER},
+      </if>
+    </set>
+    <if test="example != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update file_share
+    set share_id = #{row.shareId,jdbcType=VARCHAR},
+      file_id = #{row.fileId,jdbcType=VARCHAR},
+      user_id = #{row.userId,jdbcType=VARCHAR},
+      valid_type = #{row.validType,jdbcType=BIT},
+      expire_time = #{row.expireTime,jdbcType=TIMESTAMP},
+      share_time = #{row.shareTime,jdbcType=TIMESTAMP},
+      code = #{row.code,jdbcType=VARCHAR},
+      show_count = #{row.showCount,jdbcType=INTEGER}
+    <if test="example != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.qianqiu.clouddisk.mbg.mbg_model.FileShare">
+    update file_share
+    <set>
+      <if test="fileId != null">
+        file_id = #{fileId,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null">
+        user_id = #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="validType != null">
+        valid_type = #{validType,jdbcType=BIT},
+      </if>
+      <if test="expireTime != null">
+        expire_time = #{expireTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="shareTime != null">
+        share_time = #{shareTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="code != null">
+        code = #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="showCount != null">
+        show_count = #{showCount,jdbcType=INTEGER},
+      </if>
+    </set>
+    where share_id = #{shareId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.qianqiu.clouddisk.mbg.mbg_model.FileShare">
+    update file_share
+    set file_id = #{fileId,jdbcType=VARCHAR},
+      user_id = #{userId,jdbcType=VARCHAR},
+      valid_type = #{validType,jdbcType=BIT},
+      expire_time = #{expireTime,jdbcType=TIMESTAMP},
+      share_time = #{shareTime,jdbcType=TIMESTAMP},
+      code = #{code,jdbcType=VARCHAR},
+      show_count = #{showCount,jdbcType=INTEGER}
+    where share_id = #{shareId,jdbcType=VARCHAR}
+  </update>
+</mapper>
