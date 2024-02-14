@@ -35,6 +35,15 @@ public class CommonExceptionHandler {
         if (e.getCode() == 200) {
             return CommonResult.success(e.getData());
         }
+        if (e.getCode()==401){
+            return CommonResult.unauthorized(e.getData());
+        }
+        if (e.getCode()==404){
+            return CommonResult.validateFailed(e.getMsg());
+        }
+        if (e.getCode()==403){
+            return CommonResult.forbidden(e.getData());
+        }
         return CommonResult.failed(e.getMsg());
     }
 

@@ -16,4 +16,6 @@ public class RegisterDTO {
     private String checkCode;
     @ParamCheck
     private String emailCode;
+    @ParamCheck
+    private String key;
 }

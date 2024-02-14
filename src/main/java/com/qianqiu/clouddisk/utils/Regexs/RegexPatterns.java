@@ -17,5 +17,13 @@ public abstract class RegexPatterns {
      * 验证码正则, 6位数字或字母
      */
     public static final String VERIFY_CODE_REGEX = "^[a-zA-Z\\d]{6}$";
+    /**
+     * 校验是否是md5
+     */
+    public static final String ISMD5="^[a-fA-F0-9]{32}$";
+    /**
+     * 校验文件夹名称
+     */
+    public static final String FILE_NAME_REGEX = "^(?!^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$)[^\\\\/:*?\"<>|]+[^.\\\\/:*?\"<>|]$";
 
 }

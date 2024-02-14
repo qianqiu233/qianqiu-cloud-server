@@ -12,4 +12,6 @@ public class LoginDTO {
     private String password;
     @ParamCheck
     private String checkCode;
+    @ParamCheck
+    private String key;
 }

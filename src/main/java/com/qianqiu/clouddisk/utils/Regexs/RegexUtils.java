@@ -21,7 +21,13 @@ public class RegexUtils {
     public static boolean isPasswordInvalid(String code){
         return matchSuccess(code, RegexPatterns.PASSWORD_REGEX);
     }
-    // 校验是否不符合正则格式
+    public static boolean isMd5(String code){
+        return matchSuccess(code, RegexPatterns.ISMD5);
+    }
+    public static boolean isFolderInvalid(String code){
+        return matchSuccess(code, RegexPatterns.FILE_NAME_REGEX);
+    }
+
     public static boolean matchSuccess(String str, String regex){
         if (StrUtil.isBlank(str)) {
             return false;

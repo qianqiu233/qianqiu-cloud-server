@@ -12,8 +12,8 @@ public enum RegexEnum {
     ACCOUNT("^[0-9a-zA-Z_]{1,}$", "字母开头,由数字、英文字母或者下划线组成"),
     MONEY("^[0-9]+(.[0-9]{1,2})?$", "金额");
 
-    private String regex;
-    private String msg;
+    private final String regex;
+    private final String msg;
 
     RegexEnum(String regex, String msg) {
         this.regex = regex;

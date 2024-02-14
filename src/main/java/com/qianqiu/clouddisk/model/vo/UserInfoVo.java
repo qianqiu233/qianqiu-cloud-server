@@ -10,8 +10,11 @@ import java.util.List;
 public class UserInfoVo {
     private String userId;
     private String nickName;
-    private Object avatar;
-    private Boolean admin;
+    private String avatarUrl;
+    private Long totalSpace;
+    private Long useSpace;
+    private Integer status;
+    private List<String> roleList;
     // todo 想改成资源
-//    private List<String> userResources;
+    private List<String> userResources;
 }

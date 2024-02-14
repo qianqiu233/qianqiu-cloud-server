@@ -22,12 +22,20 @@ public class FileInfo implements Serializable {
     private String userId;
 
     /**
-     * md5值，第一次上传记录
+     * 文件md5
      *
      * @mbg.generated
      */
-    @Schema(description = "md5值，第一次上传记录")
+    @Schema(description = "文件md5")
     private String fileMd5;
+
+    /**
+     * url，需要去minio中找
+     *
+     * @mbg.generated
+     */
+    @Schema(description = "url，需要去minio中找")
+    private String fileUrl;
 
     /**
      * 父级ID
@@ -91,7 +99,7 @@ public class FileInfo implements Serializable {
      * @mbg.generated
      */
     @Schema(description = "0:文件 1:目录")
-    private Boolean folderType;
+    private Integer folderType;
 
     /**
      * 1:视频 2:音频  3:图片 4:文档 5:其他
@@ -99,7 +107,7 @@ public class FileInfo implements Serializable {
      * @mbg.generated
      */
     @Schema(description = "1:视频 2:音频  3:图片 4:文档 5:其他")
-    private Boolean fileCategory;
+    private Integer fileCategory;
 
     /**
      *  1:视频 2:音频  3:图片 4:pdf 5:doc 6:excel 7:txt 8:code 9:zip 10:其他
@@ -107,7 +115,7 @@ public class FileInfo implements Serializable {
      * @mbg.generated
      */
     @Schema(description = " 1:视频 2:音频  3:图片 4:pdf 5:doc 6:excel 7:txt 8:code 9:zip 10:其他")
-    private Boolean fileType;
+    private Integer fileType;
 
     /**
      * 0:转码中 1转码失败 2:转码成功
@@ -115,7 +123,7 @@ public class FileInfo implements Serializable {
      * @mbg.generated
      */
     @Schema(description = "0:转码中 1转码失败 2:转码成功")
-    private Boolean status;
+    private Integer status;
 
     /**
      * 回收站时间
@@ -126,12 +134,12 @@ public class FileInfo implements Serializable {
     private Date recoveryTime;
 
     /**
-     * 删除标记 0:删除  1:回收站  2:正常
+     * 使用标记 0:删除  1:回收站  2:正常
      *
      * @mbg.generated
      */
-    @Schema(description = "删除标记 0:删除  1:回收站  2:正常")
-    private Boolean delFlag;
+    @Schema(description = "使用标记 0:删除  1:回收站  2:正常")
+    private Integer useFlag;
 
     private static final long serialVersionUID = 1L;
 
@@ -157,6 +165,14 @@ public class FileInfo implements Serializable {
 
     public void setFileMd5(String fileMd5) {
         this.fileMd5 = fileMd5;
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
     }
 
     public String getFilePid() {
@@ -215,35 +231,35 @@ public class FileInfo implements Serializable {
         this.lastUpdateTime = lastUpdateTime;
     }
 
-    public Boolean getFolderType() {
+    public Integer getFolderType() {
         return folderType;
     }
 
-    public void setFolderType(Boolean folderType) {
+    public void setFolderType(Integer folderType) {
         this.folderType = folderType;
     }
 
-    public Boolean getFileCategory() {
+    public Integer getFileCategory() {
         return fileCategory;
     }
 
-    public void setFileCategory(Boolean fileCategory) {
+    public void setFileCategory(Integer fileCategory) {
         this.fileCategory = fileCategory;
     }
 
-    public Boolean getFileType() {
+    public Integer getFileType() {
         return fileType;
     }
 
-    public void setFileType(Boolean fileType) {
+    public void setFileType(Integer fileType) {
         this.fileType = fileType;
     }
 
-    public Boolean getStatus() {
+    public Integer getStatus() {
         return status;
     }
 
-    public void setStatus(Boolean status) {
+    public void setStatus(Integer status) {
         this.status = status;
     }
 
@@ -255,12 +271,12 @@ public class FileInfo implements Serializable {
         this.recoveryTime = recoveryTime;
     }
 
-    public Boolean getDelFlag() {
-        return delFlag;
+    public Integer getUseFlag() {
+        return useFlag;
     }
 
-    public void setDelFlag(Boolean delFlag) {
-        this.delFlag = delFlag;
+    public void setUseFlag(Integer useFlag) {
+        this.useFlag = useFlag;
     }
 
     @Override
@@ -272,6 +288,7 @@ public class FileInfo implements Serializable {
         sb.append(", fileId=").append(fileId);
         sb.append(", userId=").append(userId);
         sb.append(", fileMd5=").append(fileMd5);
+        sb.append(", fileUrl=").append(fileUrl);
         sb.append(", filePid=").append(filePid);
         sb.append(", fileSize=").append(fileSize);
         sb.append(", fileName=").append(fileName);
@@ -284,7 +301,7 @@ public class FileInfo implements Serializable {
         sb.append(", fileType=").append(fileType);
         sb.append(", status=").append(status);
         sb.append(", recoveryTime=").append(recoveryTime);
-        sb.append(", delFlag=").append(delFlag);
+        sb.append(", useFlag=").append(useFlag);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

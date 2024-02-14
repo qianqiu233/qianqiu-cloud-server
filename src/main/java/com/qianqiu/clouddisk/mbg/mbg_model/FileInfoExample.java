@@ -315,6 +315,76 @@ public class FileInfoExample {
             return (Criteria) this;
         }
 
+        public Criteria andFileUrlIsNull() {
+            addCriterion("file_url is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andFileUrlIsNotNull() {
+            addCriterion("file_url is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andFileUrlEqualTo(String value) {
+            addCriterion("file_url =", value, "fileUrl");
+            return (Criteria) this;
+        }
+
+        public Criteria andFileUrlNotEqualTo(String value) {
+            addCriterion("file_url <>", value, "fileUrl");
+            return (Criteria) this;
+        }
+
+        public Criteria andFileUrlGreaterThan(String value) {
+            addCriterion("file_url >", value, "fileUrl");
+            return (Criteria) this;
+        }
+
+        public Criteria andFileUrlGreaterThanOrEqualTo(String value) {
+            addCriterion("file_url >=", value, "fileUrl");
+            return (Criteria) this;
+        }
+
+        public Criteria andFileUrlLessThan(String value) {
+            addCriterion("file_url <", value, "fileUrl");
+            return (Criteria) this;
+        }
+
+        public Criteria andFileUrlLessThanOrEqualTo(String value) {
+            addCriterion("file_url <=", value, "fileUrl");
+            return (Criteria) this;
+        }
+
+        public Criteria andFileUrlLike(String value) {
+            addCriterion("file_url like", value, "fileUrl");
+            return (Criteria) this;
+        }
+
+        public Criteria andFileUrlNotLike(String value) {
+            addCriterion("file_url not like", value, "fileUrl");
+            return (Criteria) this;
+        }
+
+        public Criteria andFileUrlIn(List<String> values) {
+            addCriterion("file_url in", values, "fileUrl");
+            return (Criteria) this;
+        }
+
+        public Criteria andFileUrlNotIn(List<String> values) {
+            addCriterion("file_url not in", values, "fileUrl");
+            return (Criteria) this;
+        }
+
+        public Criteria andFileUrlBetween(String value1, String value2) {
+            addCriterion("file_url between", value1, value2, "fileUrl");
+            return (Criteria) this;
+        }
+
+        public Criteria andFileUrlNotBetween(String value1, String value2) {
+            addCriterion("file_url not between", value1, value2, "fileUrl");
+            return (Criteria) this;
+        }
+
         public Criteria andFilePidIsNull() {
             addCriterion("file_pid is null");
             return (Criteria) this;
@@ -785,52 +855,52 @@ public class FileInfoExample {
             return (Criteria) this;
         }
 
-        public Criteria andFolderTypeEqualTo(Boolean value) {
+        public Criteria andFolderTypeEqualTo(Integer value) {
             addCriterion("folder_type =", value, "folderType");
             return (Criteria) this;
         }
 
-        public Criteria andFolderTypeNotEqualTo(Boolean value) {
+        public Criteria andFolderTypeNotEqualTo(Integer value) {
             addCriterion("folder_type <>", value, "folderType");
             return (Criteria) this;
         }
 
-        public Criteria andFolderTypeGreaterThan(Boolean value) {
+        public Criteria andFolderTypeGreaterThan(Integer value) {
             addCriterion("folder_type >", value, "folderType");
             return (Criteria) this;
         }
 
-        public Criteria andFolderTypeGreaterThanOrEqualTo(Boolean value) {
+        public Criteria andFolderTypeGreaterThanOrEqualTo(Integer value) {
             addCriterion("folder_type >=", value, "folderType");
             return (Criteria) this;
         }
 
-        public Criteria andFolderTypeLessThan(Boolean value) {
+        public Criteria andFolderTypeLessThan(Integer value) {
             addCriterion("folder_type <", value, "folderType");
             return (Criteria) this;
         }
 
-        public Criteria andFolderTypeLessThanOrEqualTo(Boolean value) {
+        public Criteria andFolderTypeLessThanOrEqualTo(Integer value) {
             addCriterion("folder_type <=", value, "folderType");
             return (Criteria) this;
         }
 
-        public Criteria andFolderTypeIn(List<Boolean> values) {
+        public Criteria andFolderTypeIn(List<Integer> values) {
             addCriterion("folder_type in", values, "folderType");
             return (Criteria) this;
         }
 
-        public Criteria andFolderTypeNotIn(List<Boolean> values) {
+        public Criteria andFolderTypeNotIn(List<Integer> values) {
             addCriterion("folder_type not in", values, "folderType");
             return (Criteria) this;
         }
 
-        public Criteria andFolderTypeBetween(Boolean value1, Boolean value2) {
+        public Criteria andFolderTypeBetween(Integer value1, Integer value2) {
             addCriterion("folder_type between", value1, value2, "folderType");
             return (Criteria) this;
         }
 
-        public Criteria andFolderTypeNotBetween(Boolean value1, Boolean value2) {
+        public Criteria andFolderTypeNotBetween(Integer value1, Integer value2) {
             addCriterion("folder_type not between", value1, value2, "folderType");
             return (Criteria) this;
         }
@@ -845,52 +915,52 @@ public class FileInfoExample {
             return (Criteria) this;
         }
 
-        public Criteria andFileCategoryEqualTo(Boolean value) {
+        public Criteria andFileCategoryEqualTo(Integer value) {
             addCriterion("file_category =", value, "fileCategory");
             return (Criteria) this;
         }
 
-        public Criteria andFileCategoryNotEqualTo(Boolean value) {
+        public Criteria andFileCategoryNotEqualTo(Integer value) {
             addCriterion("file_category <>", value, "fileCategory");
             return (Criteria) this;
         }
 
-        public Criteria andFileCategoryGreaterThan(Boolean value) {
+        public Criteria andFileCategoryGreaterThan(Integer value) {
             addCriterion("file_category >", value, "fileCategory");
             return (Criteria) this;
         }
 
-        public Criteria andFileCategoryGreaterThanOrEqualTo(Boolean value) {
+        public Criteria andFileCategoryGreaterThanOrEqualTo(Integer value) {
             addCriterion("file_category >=", value, "fileCategory");
             return (Criteria) this;
         }
 
-        public Criteria andFileCategoryLessThan(Boolean value) {
+        public Criteria andFileCategoryLessThan(Integer value) {
             addCriterion("file_category <", value, "fileCategory");
             return (Criteria) this;
         }
 
-        public Criteria andFileCategoryLessThanOrEqualTo(Boolean value) {
+        public Criteria andFileCategoryLessThanOrEqualTo(Integer value) {
             addCriterion("file_category <=", value, "fileCategory");
             return (Criteria) this;
         }
 
-        public Criteria andFileCategoryIn(List<Boolean> values) {
+        public Criteria andFileCategoryIn(List<Integer> values) {
             addCriterion("file_category in", values, "fileCategory");
             return (Criteria) this;
         }
 
-        public Criteria andFileCategoryNotIn(List<Boolean> values) {
+        public Criteria andFileCategoryNotIn(List<Integer> values) {
             addCriterion("file_category not in", values, "fileCategory");
             return (Criteria) this;
         }
 
-        public Criteria andFileCategoryBetween(Boolean value1, Boolean value2) {
+        public Criteria andFileCategoryBetween(Integer value1, Integer value2) {
             addCriterion("file_category between", value1, value2, "fileCategory");
             return (Criteria) this;
         }
 
-        public Criteria andFileCategoryNotBetween(Boolean value1, Boolean value2) {
+        public Criteria andFileCategoryNotBetween(Integer value1, Integer value2) {
             addCriterion("file_category not between", value1, value2, "fileCategory");
             return (Criteria) this;
         }
@@ -905,52 +975,52 @@ public class FileInfoExample {
             return (Criteria) this;
         }
 
-        public Criteria andFileTypeEqualTo(Boolean value) {
+        public Criteria andFileTypeEqualTo(Integer value) {
             addCriterion("file_type =", value, "fileType");
             return (Criteria) this;
         }
 
-        public Criteria andFileTypeNotEqualTo(Boolean value) {
+        public Criteria andFileTypeNotEqualTo(Integer value) {
             addCriterion("file_type <>", value, "fileType");
             return (Criteria) this;
         }
 
-        public Criteria andFileTypeGreaterThan(Boolean value) {
+        public Criteria andFileTypeGreaterThan(Integer value) {
             addCriterion("file_type >", value, "fileType");
             return (Criteria) this;
         }
 
-        public Criteria andFileTypeGreaterThanOrEqualTo(Boolean value) {
+        public Criteria andFileTypeGreaterThanOrEqualTo(Integer value) {
             addCriterion("file_type >=", value, "fileType");
             return (Criteria) this;
         }
 
-        public Criteria andFileTypeLessThan(Boolean value) {
+        public Criteria andFileTypeLessThan(Integer value) {
             addCriterion("file_type <", value, "fileType");
             return (Criteria) this;
         }
 
-        public Criteria andFileTypeLessThanOrEqualTo(Boolean value) {
+        public Criteria andFileTypeLessThanOrEqualTo(Integer value) {
             addCriterion("file_type <=", value, "fileType");
             return (Criteria) this;
         }
 
-        public Criteria andFileTypeIn(List<Boolean> values) {
+        public Criteria andFileTypeIn(List<Integer> values) {
             addCriterion("file_type in", values, "fileType");
             return (Criteria) this;
         }
 
-        public Criteria andFileTypeNotIn(List<Boolean> values) {
+        public Criteria andFileTypeNotIn(List<Integer> values) {
             addCriterion("file_type not in", values, "fileType");
             return (Criteria) this;
         }
 
-        public Criteria andFileTypeBetween(Boolean value1, Boolean value2) {
+        public Criteria andFileTypeBetween(Integer value1, Integer value2) {
             addCriterion("file_type between", value1, value2, "fileType");
             return (Criteria) this;
         }
 
-        public Criteria andFileTypeNotBetween(Boolean value1, Boolean value2) {
+        public Criteria andFileTypeNotBetween(Integer value1, Integer value2) {
             addCriterion("file_type not between", value1, value2, "fileType");
             return (Criteria) this;
         }
@@ -965,52 +1035,52 @@ public class FileInfoExample {
             return (Criteria) this;
         }
 
-        public Criteria andStatusEqualTo(Boolean value) {
+        public Criteria andStatusEqualTo(Integer value) {
             addCriterion("status =", value, "status");
             return (Criteria) this;
         }
 
-        public Criteria andStatusNotEqualTo(Boolean value) {
+        public Criteria andStatusNotEqualTo(Integer value) {
             addCriterion("status <>", value, "status");
             return (Criteria) this;
         }
 
-        public Criteria andStatusGreaterThan(Boolean value) {
+        public Criteria andStatusGreaterThan(Integer value) {
             addCriterion("status >", value, "status");
             return (Criteria) this;
         }
 
-        public Criteria andStatusGreaterThanOrEqualTo(Boolean value) {
+        public Criteria andStatusGreaterThanOrEqualTo(Integer value) {
             addCriterion("status >=", value, "status");
             return (Criteria) this;
         }
 
-        public Criteria andStatusLessThan(Boolean value) {
+        public Criteria andStatusLessThan(Integer value) {
             addCriterion("status <", value, "status");
             return (Criteria) this;
         }
 
-        public Criteria andStatusLessThanOrEqualTo(Boolean value) {
+        public Criteria andStatusLessThanOrEqualTo(Integer value) {
             addCriterion("status <=", value, "status");
             return (Criteria) this;
         }
 
-        public Criteria andStatusIn(List<Boolean> values) {
+        public Criteria andStatusIn(List<Integer> values) {
             addCriterion("status in", values, "status");
             return (Criteria) this;
         }
 
-        public Criteria andStatusNotIn(List<Boolean> values) {
+        public Criteria andStatusNotIn(List<Integer> values) {
             addCriterion("status not in", values, "status");
             return (Criteria) this;
         }
 
-        public Criteria andStatusBetween(Boolean value1, Boolean value2) {
+        public Criteria andStatusBetween(Integer value1, Integer value2) {
             addCriterion("status between", value1, value2, "status");
             return (Criteria) this;
         }
 
-        public Criteria andStatusNotBetween(Boolean value1, Boolean value2) {
+        public Criteria andStatusNotBetween(Integer value1, Integer value2) {
             addCriterion("status not between", value1, value2, "status");
             return (Criteria) this;
         }
@@ -1075,63 +1145,63 @@ public class FileInfoExample {
             return (Criteria) this;
         }
 
-        public Criteria andDelFlagIsNull() {
-            addCriterion("del_flag is null");
+        public Criteria andUseFlagIsNull() {
+            addCriterion("use_flag is null");
             return (Criteria) this;
         }
 
-        public Criteria andDelFlagIsNotNull() {
-            addCriterion("del_flag is not null");
+        public Criteria andUseFlagIsNotNull() {
+            addCriterion("use_flag is not null");
             return (Criteria) this;
         }
 
-        public Criteria andDelFlagEqualTo(Boolean value) {
-            addCriterion("del_flag =", value, "delFlag");
+        public Criteria andUseFlagEqualTo(Integer value) {
+            addCriterion("use_flag =", value, "useFlag");
             return (Criteria) this;
         }
 
-        public Criteria andDelFlagNotEqualTo(Boolean value) {
-            addCriterion("del_flag <>", value, "delFlag");
+        public Criteria andUseFlagNotEqualTo(Integer value) {
+            addCriterion("use_flag <>", value, "useFlag");
             return (Criteria) this;
         }
 
-        public Criteria andDelFlagGreaterThan(Boolean value) {
-            addCriterion("del_flag >", value, "delFlag");
+        public Criteria andUseFlagGreaterThan(Integer value) {
+            addCriterion("use_flag >", value, "useFlag");
             return (Criteria) this;
         }
 
-        public Criteria andDelFlagGreaterThanOrEqualTo(Boolean value) {
-            addCriterion("del_flag >=", value, "delFlag");
+        public Criteria andUseFlagGreaterThanOrEqualTo(Integer value) {
+            addCriterion("use_flag >=", value, "useFlag");
             return (Criteria) this;
         }
 
-        public Criteria andDelFlagLessThan(Boolean value) {
-            addCriterion("del_flag <", value, "delFlag");
+        public Criteria andUseFlagLessThan(Integer value) {
+            addCriterion("use_flag <", value, "useFlag");
             return (Criteria) this;
         }
 
-        public Criteria andDelFlagLessThanOrEqualTo(Boolean value) {
-            addCriterion("del_flag <=", value, "delFlag");
+        public Criteria andUseFlagLessThanOrEqualTo(Integer value) {
+            addCriterion("use_flag <=", value, "useFlag");
             return (Criteria) this;
         }
 
-        public Criteria andDelFlagIn(List<Boolean> values) {
-            addCriterion("del_flag in", values, "delFlag");
+        public Criteria andUseFlagIn(List<Integer> values) {
+            addCriterion("use_flag in", values, "useFlag");
             return (Criteria) this;
         }
 
-        public Criteria andDelFlagNotIn(List<Boolean> values) {
-            addCriterion("del_flag not in", values, "delFlag");
+        public Criteria andUseFlagNotIn(List<Integer> values) {
+            addCriterion("use_flag not in", values, "useFlag");
             return (Criteria) this;
         }
 
-        public Criteria andDelFlagBetween(Boolean value1, Boolean value2) {
-            addCriterion("del_flag between", value1, value2, "delFlag");
+        public Criteria andUseFlagBetween(Integer value1, Integer value2) {
+            addCriterion("use_flag between", value1, value2, "useFlag");
             return (Criteria) this;
         }
 
-        public Criteria andDelFlagNotBetween(Boolean value1, Boolean value2) {
-            addCriterion("del_flag not between", value1, value2, "delFlag");
+        public Criteria andUseFlagNotBetween(Integer value1, Integer value2) {
+            addCriterion("use_flag not between", value1, value2, "useFlag");
             return (Criteria) this;
         }
     }

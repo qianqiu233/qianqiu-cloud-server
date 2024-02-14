@@ -5,6 +5,7 @@
     <id column="file_id" jdbcType="VARCHAR" property="fileId" />
     <id column="user_id" jdbcType="VARCHAR" property="userId" />
     <result column="file_md5" jdbcType="VARCHAR" property="fileMd5" />
+    <result column="file_url" jdbcType="VARCHAR" property="fileUrl" />
     <result column="file_pid" jdbcType="VARCHAR" property="filePid" />
     <result column="file_size" jdbcType="BIGINT" property="fileSize" />
     <result column="file_name" jdbcType="VARCHAR" property="fileName" />
@@ -12,12 +13,12 @@
     <result column="file_path" jdbcType="VARCHAR" property="filePath" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
     <result column="last_update_time" jdbcType="TIMESTAMP" property="lastUpdateTime" />
-    <result column="folder_type" jdbcType="BIT" property="folderType" />
-    <result column="file_category" jdbcType="BIT" property="fileCategory" />
-    <result column="file_type" jdbcType="BIT" property="fileType" />
-    <result column="status" jdbcType="BIT" property="status" />
+    <result column="folder_type" jdbcType="INTEGER" property="folderType" />
+    <result column="file_category" jdbcType="INTEGER" property="fileCategory" />
+    <result column="file_type" jdbcType="INTEGER" property="fileType" />
+    <result column="status" jdbcType="INTEGER" property="status" />
     <result column="recovery_time" jdbcType="TIMESTAMP" property="recoveryTime" />
-    <result column="del_flag" jdbcType="BIT" property="delFlag" />
+    <result column="use_flag" jdbcType="INTEGER" property="useFlag" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <where>
@@ -78,9 +79,9 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    file_id, user_id, file_md5, file_pid, file_size, file_name, file_cover, file_path, 
-    create_time, last_update_time, folder_type, file_category, file_type, status, recovery_time, 
-    del_flag
+    file_id, user_id, file_md5, file_url, file_pid, file_size, file_name, file_cover, 
+    file_path, create_time, last_update_time, folder_type, file_category, file_type, 
+    status, recovery_time, use_flag
   </sql>
   <select id="selectByExample" parameterType="com.qianqiu.clouddisk.mbg.mbg_model.FileInfoExample" resultMap="BaseResultMap">
     select
@@ -116,17 +117,17 @@
   </delete>
   <insert id="insert" parameterType="com.qianqiu.clouddisk.mbg.mbg_model.FileInfo">
     insert into file_info (file_id, user_id, file_md5, 
-      file_pid, file_size, file_name, 
-      file_cover, file_path, create_time, 
-      last_update_time, folder_type, file_category, 
-      file_type, status, recovery_time, 
-      del_flag)
+      file_url, file_pid, file_size, 
+      file_name, file_cover, file_path, 
+      create_time, last_update_time, folder_type, 
+      file_category, file_type, status, 
+      recovery_time, use_flag)
     values (#{fileId,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR}, #{fileMd5,jdbcType=VARCHAR}, 
-      #{filePid,jdbcType=VARCHAR}, #{fileSize,jdbcType=BIGINT}, #{fileName,jdbcType=VARCHAR}, 
-      #{fileCover,jdbcType=VARCHAR}, #{filePath,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
-      #{lastUpdateTime,jdbcType=TIMESTAMP}, #{folderType,jdbcType=BIT}, #{fileCategory,jdbcType=BIT}, 
-      #{fileType,jdbcType=BIT}, #{status,jdbcType=BIT}, #{recoveryTime,jdbcType=TIMESTAMP}, 
-      #{delFlag,jdbcType=BIT})
+      #{fileUrl,jdbcType=VARCHAR}, #{filePid,jdbcType=VARCHAR}, #{fileSize,jdbcType=BIGINT}, 
+      #{fileName,jdbcType=VARCHAR}, #{fileCover,jdbcType=VARCHAR}, #{filePath,jdbcType=VARCHAR}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{lastUpdateTime,jdbcType=TIMESTAMP}, #{folderType,jdbcType=INTEGER}, 
+      #{fileCategory,jdbcType=INTEGER}, #{fileType,jdbcType=INTEGER}, #{status,jdbcType=INTEGER}, 
+      #{recoveryTime,jdbcType=TIMESTAMP}, #{useFlag,jdbcType=INTEGER})
   </insert>
   <insert id="insertSelective" parameterType="com.qianqiu.clouddisk.mbg.mbg_model.FileInfo">
     insert into file_info
@@ -139,6 +140,9 @@
       </if>
       <if test="fileMd5 != null">
         file_md5,
+      </if>
+      <if test="fileUrl != null">
+        file_url,
       </if>
       <if test="filePid != null">
         file_pid,
@@ -176,8 +180,8 @@
       <if test="recoveryTime != null">
         recovery_time,
       </if>
-      <if test="delFlag != null">
-        del_flag,
+      <if test="useFlag != null">
+        use_flag,
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -189,6 +193,9 @@
       </if>
       <if test="fileMd5 != null">
         #{fileMd5,jdbcType=VARCHAR},
+      </if>
+      <if test="fileUrl != null">
+        #{fileUrl,jdbcType=VARCHAR},
       </if>
       <if test="filePid != null">
         #{filePid,jdbcType=VARCHAR},
@@ -212,22 +219,22 @@
         #{lastUpdateTime,jdbcType=TIMESTAMP},
       </if>
       <if test="folderType != null">
-        #{folderType,jdbcType=BIT},
+        #{folderType,jdbcType=INTEGER},
       </if>
       <if test="fileCategory != null">
-        #{fileCategory,jdbcType=BIT},
+        #{fileCategory,jdbcType=INTEGER},
       </if>
       <if test="fileType != null">
-        #{fileType,jdbcType=BIT},
+        #{fileType,jdbcType=INTEGER},
       </if>
       <if test="status != null">
-        #{status,jdbcType=BIT},
+        #{status,jdbcType=INTEGER},
       </if>
       <if test="recoveryTime != null">
         #{recoveryTime,jdbcType=TIMESTAMP},
       </if>
-      <if test="delFlag != null">
-        #{delFlag,jdbcType=BIT},
+      <if test="useFlag != null">
+        #{useFlag,jdbcType=INTEGER},
       </if>
     </trim>
   </insert>
@@ -248,6 +255,9 @@
       </if>
       <if test="row.fileMd5 != null">
         file_md5 = #{row.fileMd5,jdbcType=VARCHAR},
+      </if>
+      <if test="row.fileUrl != null">
+        file_url = #{row.fileUrl,jdbcType=VARCHAR},
       </if>
       <if test="row.filePid != null">
         file_pid = #{row.filePid,jdbcType=VARCHAR},
@@ -271,22 +281,22 @@
         last_update_time = #{row.lastUpdateTime,jdbcType=TIMESTAMP},
       </if>
       <if test="row.folderType != null">
-        folder_type = #{row.folderType,jdbcType=BIT},
+        folder_type = #{row.folderType,jdbcType=INTEGER},
       </if>
       <if test="row.fileCategory != null">
-        file_category = #{row.fileCategory,jdbcType=BIT},
+        file_category = #{row.fileCategory,jdbcType=INTEGER},
       </if>
       <if test="row.fileType != null">
-        file_type = #{row.fileType,jdbcType=BIT},
+        file_type = #{row.fileType,jdbcType=INTEGER},
       </if>
       <if test="row.status != null">
-        status = #{row.status,jdbcType=BIT},
+        status = #{row.status,jdbcType=INTEGER},
       </if>
       <if test="row.recoveryTime != null">
         recovery_time = #{row.recoveryTime,jdbcType=TIMESTAMP},
       </if>
-      <if test="row.delFlag != null">
-        del_flag = #{row.delFlag,jdbcType=BIT},
+      <if test="row.useFlag != null">
+        use_flag = #{row.useFlag,jdbcType=INTEGER},
       </if>
     </set>
     <if test="example != null">
@@ -298,6 +308,7 @@
     set file_id = #{row.fileId,jdbcType=VARCHAR},
       user_id = #{row.userId,jdbcType=VARCHAR},
       file_md5 = #{row.fileMd5,jdbcType=VARCHAR},
+      file_url = #{row.fileUrl,jdbcType=VARCHAR},
       file_pid = #{row.filePid,jdbcType=VARCHAR},
       file_size = #{row.fileSize,jdbcType=BIGINT},
       file_name = #{row.fileName,jdbcType=VARCHAR},
@@ -305,12 +316,12 @@
       file_path = #{row.filePath,jdbcType=VARCHAR},
       create_time = #{row.createTime,jdbcType=TIMESTAMP},
       last_update_time = #{row.lastUpdateTime,jdbcType=TIMESTAMP},
-      folder_type = #{row.folderType,jdbcType=BIT},
-      file_category = #{row.fileCategory,jdbcType=BIT},
-      file_type = #{row.fileType,jdbcType=BIT},
-      status = #{row.status,jdbcType=BIT},
+      folder_type = #{row.folderType,jdbcType=INTEGER},
+      file_category = #{row.fileCategory,jdbcType=INTEGER},
+      file_type = #{row.fileType,jdbcType=INTEGER},
+      status = #{row.status,jdbcType=INTEGER},
       recovery_time = #{row.recoveryTime,jdbcType=TIMESTAMP},
-      del_flag = #{row.delFlag,jdbcType=BIT}
+      use_flag = #{row.useFlag,jdbcType=INTEGER}
     <if test="example != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -320,6 +331,9 @@
     <set>
       <if test="fileMd5 != null">
         file_md5 = #{fileMd5,jdbcType=VARCHAR},
+      </if>
+      <if test="fileUrl != null">
+        file_url = #{fileUrl,jdbcType=VARCHAR},
       </if>
       <if test="filePid != null">
         file_pid = #{filePid,jdbcType=VARCHAR},
@@ -343,22 +357,22 @@
         last_update_time = #{lastUpdateTime,jdbcType=TIMESTAMP},
       </if>
       <if test="folderType != null">
-        folder_type = #{folderType,jdbcType=BIT},
+        folder_type = #{folderType,jdbcType=INTEGER},
       </if>
       <if test="fileCategory != null">
-        file_category = #{fileCategory,jdbcType=BIT},
+        file_category = #{fileCategory,jdbcType=INTEGER},
       </if>
       <if test="fileType != null">
-        file_type = #{fileType,jdbcType=BIT},
+        file_type = #{fileType,jdbcType=INTEGER},
       </if>
       <if test="status != null">
-        status = #{status,jdbcType=BIT},
+        status = #{status,jdbcType=INTEGER},
       </if>
       <if test="recoveryTime != null">
         recovery_time = #{recoveryTime,jdbcType=TIMESTAMP},
       </if>
-      <if test="delFlag != null">
-        del_flag = #{delFlag,jdbcType=BIT},
+      <if test="useFlag != null">
+        use_flag = #{useFlag,jdbcType=INTEGER},
       </if>
     </set>
     where file_id = #{fileId,jdbcType=VARCHAR}
@@ -367,6 +381,7 @@
   <update id="updateByPrimaryKey" parameterType="com.qianqiu.clouddisk.mbg.mbg_model.FileInfo">
     update file_info
     set file_md5 = #{fileMd5,jdbcType=VARCHAR},
+      file_url = #{fileUrl,jdbcType=VARCHAR},
       file_pid = #{filePid,jdbcType=VARCHAR},
       file_size = #{fileSize,jdbcType=BIGINT},
       file_name = #{fileName,jdbcType=VARCHAR},
@@ -374,12 +389,12 @@
       file_path = #{filePath,jdbcType=VARCHAR},
       create_time = #{createTime,jdbcType=TIMESTAMP},
       last_update_time = #{lastUpdateTime,jdbcType=TIMESTAMP},
-      folder_type = #{folderType,jdbcType=BIT},
-      file_category = #{fileCategory,jdbcType=BIT},
-      file_type = #{fileType,jdbcType=BIT},
-      status = #{status,jdbcType=BIT},
+      folder_type = #{folderType,jdbcType=INTEGER},
+      file_category = #{fileCategory,jdbcType=INTEGER},
+      file_type = #{fileType,jdbcType=INTEGER},
+      status = #{status,jdbcType=INTEGER},
       recovery_time = #{recoveryTime,jdbcType=TIMESTAMP},
-      del_flag = #{delFlag,jdbcType=BIT}
+      use_flag = #{useFlag,jdbcType=INTEGER}
     where file_id = #{fileId,jdbcType=VARCHAR}
       and user_id = #{userId,jdbcType=VARCHAR}
   </update>

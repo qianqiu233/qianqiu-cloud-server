@@ -27,14 +27,12 @@ public class UserLoginController {
      * 获取验证码
      *
      * @param response
-     * @param email
      */
     @Operation(summary = "发送图片或验证码", description = "验证码相关")
     @GetMapping("/sendCode")
     @EnableCheck
-    public void sendCode(HttpServletResponse response,
-                         @ParamCheck(regex = RegexEnum.EMAIL) String email, Integer type) {
-        userLoginService.sendCode(response, email, type);
+    public void sendCode(HttpServletResponse response, String key, Integer type) {
+        userLoginService.sendCode(response, key, type);
     }
 
     /**
@@ -47,11 +45,8 @@ public class UserLoginController {
     @PostMapping("/register")
     @EnableCheck
     public CommonResult UserRegister(@RequestBody RegisterDTO registerDTO) {
-        int count = userLoginService.UserRegister(registerDTO);
-        if (count > 0) {
-            return CommonResult.success(null,"注册成功");
-        }
-        return CommonResult.failed("注册失败");
+
+        return userLoginService.UserRegister(registerDTO);
 
     }
 
@@ -77,9 +72,8 @@ public class UserLoginController {
     @Operation(summary = "用户登录", description = "登录")
     @PostMapping("/login")
     @EnableCheck
-    public CommonResult<UserInfoVo> Login(@RequestBody LoginDTO loginDTO) {
-        UserInfoVo userInfoVo=userLoginService.login(loginDTO);
-        return CommonResult.success(userInfoVo);
+    public CommonResult Login(@RequestBody LoginDTO loginDTO) {
+        return userLoginService.login(loginDTO);
     }
 
     /**
@@ -91,7 +85,6 @@ public class UserLoginController {
     @PostMapping("/resetPwd")
     @EnableCheck
     public CommonResult reSetPassword(@RequestBody ReSetPwdDTO reSetPwdDTO){
-        userLoginService.reSetPassword(reSetPwdDTO);
-        return CommonResult.success(null,"重置密码成功");
+        return userLoginService.reSetPassword(reSetPwdDTO);
     }
 }

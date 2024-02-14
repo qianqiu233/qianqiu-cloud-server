@@ -12,4 +12,6 @@ public class SendEmailDTO {
     private String email;
     @ParamCheck
     private Integer type;
+    @ParamCheck
+    private String key;
 }

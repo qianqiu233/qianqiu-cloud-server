@@ -5,16 +5,17 @@ import com.qianqiu.clouddisk.model.dto.ReSetPwdDTO;
 import com.qianqiu.clouddisk.model.dto.RegisterDTO;
 import com.qianqiu.clouddisk.model.dto.SendEmailDTO;
 import com.qianqiu.clouddisk.model.vo.UserInfoVo;
+import com.qianqiu.clouddisk.utils.commonResult.CommonResult;
 import jakarta.servlet.http.HttpServletResponse;
 
 public interface UserLoginService {
-    void sendCode(HttpServletResponse response, String email, Integer type);
+    void sendCode(HttpServletResponse response, String key, Integer type);
 
-    int UserRegister(RegisterDTO registerDTO);
+    CommonResult UserRegister(RegisterDTO registerDTO);
 
     void sendEmailCode(SendEmailDTO sendEmailDTO);
 
-    UserInfoVo login(LoginDTO loginDTO);
+    CommonResult login(LoginDTO loginDTO);
 
-    void reSetPassword(ReSetPwdDTO reSetPwdDTO);
+    CommonResult reSetPassword(ReSetPwdDTO reSetPwdDTO);
 }

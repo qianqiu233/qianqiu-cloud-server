@@ -6,8 +6,6 @@ import lombok.Data;
 
 @Data
 public class UpdateUserPwdDTO {
-    @ParamCheck
-    private String userId;
     @ParamCheck(regex = RegexEnum.PASSWORD)
     private String oldPassword;
     @ParamCheck(regex = RegexEnum.PASSWORD)
