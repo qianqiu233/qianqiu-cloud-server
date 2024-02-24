@@ -1,11 +1,16 @@
 package com.qianqiu.clouddisk.test;
 
+import cn.hutool.core.date.DateUtil;
 import com.qianqiu.clouddisk.utils.FileAboutUtil;
 import com.qianqiu.clouddisk.utils.enums.FileCategoryEnums;
 import com.qianqiu.clouddisk.utils.enums.FileTypeEnums;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.annotation.AliasFor;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 import static com.qianqiu.clouddisk.utils.Constant.DefaultConstant.DEFAULT_THUMBNAIL_PACKAGE;
 
@@ -42,5 +47,26 @@ public class FileAboutTest {
         String s = FileAboutUtil.fileSuffixToPNG("156565.cg");
         System.out.println(s);
 
+    }
+    @Test
+    void test06() {
+        String s = "file";
+        String s1 = "file(1)";
+        String s2="file(3)";
+        List<String> list=new ArrayList<>();
+        list.add(s);
+        list.add(s1);
+        String str = FileAboutUtil.fileReNameByAddNum(list, "file");
+        System.out.println(str);
+    }
+    @Test
+    void test07(){
+        // 假设参数日期为 2023-01-01
+        String dateString = "2024-01-01";
+        // 将参数日期解析为 Date 对象
+        Date targetDate = DateUtil.parseDate(dateString);
+        // 判断当前日期是否在参数日期之前
+        boolean expiredFile = FileAboutUtil.isExpiredFile(targetDate);
+        System.out.println("是否超过30天"+expiredFile);
     }
 }

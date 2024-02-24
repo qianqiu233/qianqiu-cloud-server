@@ -1,15 +1,13 @@
 package com.qianqiu.clouddisk.utils;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.crypto.digest.DigestUtil;
 import cn.hutool.json.JSONUtil;
 import com.qianqiu.clouddisk.exception.CommonException;
 import com.qianqiu.clouddisk.model.dto.BucketPolicyConfigDTO;
 import com.qianqiu.clouddisk.model.dto.MinioUploadDTO;
-import com.qianqiu.clouddisk.utils.commonResult.ResultCode;
 import com.qianqiu.clouddisk.utils.enums.FileCategoryEnums;
 import io.minio.*;
-import io.minio.errors.*;
+import io.minio.http.Method;
 import io.minio.messages.Bucket;
 import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
@@ -17,28 +15,22 @@ import io.minio.messages.Item;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import static com.qianqiu.clouddisk.utils.Constant.DefaultConstant.DEFAULT_AVATAR_PACKAGE;
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @Slf4j
 public class MinioUtil{
     @Value("${minio.endpoint}")
     private String ENDPOINT;
+    @Value("${minio.defaultShareForeverBucket}")
+    private String shareForever;
     @Autowired
     private MinioClient minioClient;
     private static Logger logger = LoggerFactory.getLogger(MinioUtil.class);
@@ -85,9 +77,9 @@ public class MinioUtil{
         String fileName = file.getOriginalFilename();
         //按日分包
         Date date = new Date();
-        String dateYMD = DateUtil.format(date, DateUtil.YMD);
+        String dateYMD = MyDateUtil.format(date, MyDateUtil.YMD);
         //按时间再分包
-        String dateHMS = DateUtil.format(date, DateUtil.HMS);
+        String dateHMS = MyDateUtil.format(date, MyDateUtil.HMS);
         //判断类型，我该丢哪个包
         FileCategoryEnums fileType = FileAboutUtil.getFileCategoryType(file);
         //存储对象名称 2002255525/fileName
@@ -136,6 +128,24 @@ public class MinioUtil{
             log.error(e.toString());
         }
     }
+    public boolean createPublicBucket(String bucketName){
+        try {
+            boolean isExist = bucketExists(bucketName);
+            if (!isExist) {
+                minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
+                BucketPolicyConfigDTO bucketPolicyConfigDto = createPublicBucketPolicyConfigDto(bucketName);
+                SetBucketPolicyArgs setBucketPolicyArgs = SetBucketPolicyArgs.builder()
+                        .bucket(bucketName)
+                        .config(JSONUtil.toJsonStr(bucketPolicyConfigDto))
+                        .build();
+                minioClient.setBucketPolicy(setBucketPolicyArgs);
+            }
+            return true;
+        } catch (Exception e) {
+            log.error(e.toString());
+            return false;
+        }
+    }
 
     /**
      * 创建桶访问策略
@@ -143,16 +153,82 @@ public class MinioUtil{
      * @param bucketName
      * @return
      */
-    private BucketPolicyConfigDTO createBucketPolicyConfigDto(String bucketName) {
+    public BucketPolicyConfigDTO createBucketPolicyConfigDto(String bucketName) {
+        List<BucketPolicyConfigDTO.Statement> statements = new ArrayList<>();
+        BucketPolicyConfigDTO.Statement listStatement = BucketPolicyConfigDTO.Statement.builder()
+                .Effect("Allow")
+                .Principal("*")
+                .Action("s3:ListBucket")
+                .Resource("arn:aws:s3:::" + bucketName)
+                .build();
+        statements.add(listStatement);
+        BucketPolicyConfigDTO.Statement GetBucketStatement = BucketPolicyConfigDTO.Statement.builder()
+                .Effect("Allow")
+                .Principal("*")
+                .Action("s3:GetBucketLocation")
+                .Resource("arn:aws:s3:::" + bucketName)
+                .build();
+        statements.add(GetBucketStatement);
+        BucketPolicyConfigDTO.Statement MultipartUploadStatement = BucketPolicyConfigDTO.Statement.builder()
+                .Effect("Allow")
+                .Principal("*")
+                .Action("s3:ListBucketMultipartUploads")
+                .Resource("arn:aws:s3:::" + bucketName)
+                .build();
+        statements.add(MultipartUploadStatement);
+        BucketPolicyConfigDTO.Statement putStatement = BucketPolicyConfigDTO.Statement.builder()
+                .Effect("Allow")
+                .Principal("*")
+                .Action("s3:PutObject")
+                .Resource("arn:aws:s3:::" + bucketName + "/*")
+                .build();
+        statements.add(putStatement);
+        // 拒绝获取除`avatar/`目录之外的所有对象
+        BucketPolicyConfigDTO.Statement denyStatement = BucketPolicyConfigDTO.Statement.builder()
+                .Effect("Deny")
+                .Principal("*")
+                .Action("s3:GetObject")
+                .Resource("arn:aws:s3:::" + bucketName + "/*")
+                .build();
+        statements.add(denyStatement);
+        // 允许获取`avatar/`目录下的对象
+        BucketPolicyConfigDTO.Statement allowAvatarStatement = BucketPolicyConfigDTO.Statement.builder()
+                .Effect("Allow")
+                .Principal("*")
+                .Action("s3:GetObject")
+                .Resource("arn:aws:s3:::" + bucketName + "/avatar/*")
+                .build();
+        statements.add(allowAvatarStatement);
+        return BucketPolicyConfigDTO.builder()
+                .Version("2012-10-17")
+                .Statement(statements)
+                .build();
+
+    }
+    public BucketPolicyConfigDTO createPublicBucketPolicyConfigDto(String bucketName) {
         BucketPolicyConfigDTO.Statement statement = BucketPolicyConfigDTO.Statement.builder()
                 .Effect("Allow")
                 .Principal("*")
                 .Action("s3:GetObject")
-                .Resource("arn:aws:s3:::" + bucketName + "/*.**").build();
+                .Resource("arn:aws:s3:::"+bucketName+"/*.**").build();
         return BucketPolicyConfigDTO.builder()
-                .Version("2024-1-1")
+                .Version("2012-10-17")
                 .Statement(CollUtil.toList(statement))
                 .build();
+    }
+
+    public Boolean updateBucketPolicy(BucketPolicyConfigDTO bucketPolicyConfigDto,String bucketName){
+        SetBucketPolicyArgs setBucketPolicyArgs = SetBucketPolicyArgs.builder()
+                .bucket(bucketName)
+                .config(JSONUtil.toJsonStr(bucketPolicyConfigDto))
+                .build();
+        try {
+            minioClient.setBucketPolicy(setBucketPolicyArgs);
+        } catch (Exception e) {
+            log.error(e.toString());
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -266,14 +342,14 @@ public class MinioUtil{
         return false;
     }
 
-    public MinioUploadDTO createFolder(String folderName, String bucketName) {
+    public boolean createFolder(String folderName, String bucketName) {
         log.info("创建分片目录中|参数|folderName:{}|bucketName:{}",folderName,bucketName);
-        MinioUploadDTO minioUploadDTO = null;
+        String objectName = folderName + "/";
+        boolean flag = false;
         try {
             // 在对象键中使用斜杠来模拟文件夹
             // 检查文件夹是否已存在
             if (!doesFolderExist(bucketName,folderName)) {
-                String objectName = folderName + "/";
                 // 创建 PutObjectArgs 对象，传递一个空的输入流和大小参数
                 PutObjectArgs build = PutObjectArgs.builder()
                         .bucket(bucketName)
@@ -282,19 +358,13 @@ public class MinioUtil{
                         .build();
                 // 使用 minioClient.putObject 上传对象
                 minioClient.putObject(build);
-                String objectNameUrl=ENDPOINT+bucketName+"/"+objectName;
-                minioUploadDTO= MinioUploadDTO.builder()
-                        .fileUrl(objectNameUrl)
-                        .fileName(folderName)
-                        .createTime(new Date())
-                        .lastUpdateTime(new Date())
-                        .filePath(objectName)
-                        .build();
+                flag=true;
             }
         } catch (Exception e) {
-            throw new CommonException("创建文件夹失败" + e);
+            log.info("创建文件夹失败:{}",e.toString());
+            return flag;
         }
-        return minioUploadDTO;
+        return flag;
     }
     /**
      * 判断文件夹是否存在
@@ -369,6 +439,13 @@ public class MinioUtil{
             return false;
         }
     }
+
+    /**
+     * 判断文件是否存在
+     * @param bucketName
+     * @param objectName
+     * @return
+     */
     public Boolean existsObject(String bucketName,String objectName){
         log.info("判断文件是否存在|参数|bucketName:{}|objectName:{}",bucketName,objectName);
         try {
@@ -383,8 +460,136 @@ public class MinioUtil{
         return true;
     }
 
+    public boolean uploadLocalFile(String localFilePath,String bucketName,String objectName){
+        // 获取文件名
+        try {
+            File file = new File(localFilePath);
+            InputStream inputStream = new FileInputStream(file);
+            // PutObjectOptions，上传配置(文件大小，内存中文件分片大小)
+            PutObjectArgs putObjectArgs = PutObjectArgs.builder()
+                    .bucket(bucketName)
+                    //对象名称
+                    .object(objectName)
+                    //文件类型
+                    .contentType("application/octet-stream")
+                    .stream(inputStream,file.length(),-1).build();
+            //上传
+            minioClient.putObject(putObjectArgs);
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
+
+    // 生成预签名URL
+    public String generatePresignedUrl(String bucketName, String objectName,Method method,Integer durationSeconds,TimeUnit timeUnit) {
+        log.info("生成预签名URL|参数|bucketName:{}|objectName:{}|durationSeconds:{}|TimeUnit:{}",bucketName,objectName,durationSeconds,timeUnit);
+        try {
+            // 生成预签名URL
+            String presignedUrl = minioClient.getPresignedObjectUrl(
+                    GetPresignedObjectUrlArgs.builder()
+                            .method(method)
+                            .expiry(durationSeconds,timeUnit)
+                            .bucket(bucketName)
+                            .object(objectName).build());
+            // 返回预签名URL
+            return presignedUrl;
+        } catch (Exception e) {
+            logger.error("生成预签名URL失败: {}", e.getMessage());
+            // 返回空字符串或者抛出异常，根据您的需求进行处理
+            return "";
+        }
+    }
+    public String generatePresignedUrl(String bucketName, String objectName,Method method,Integer durationSeconds,TimeUnit timeUnit,Map<String, String> extraQueryParams) {
+        log.info("生成预签名URL|参数|bucketName:{}|objectName:{}|durationSeconds:{}|TimeUnit:{}",bucketName,objectName,durationSeconds,timeUnit);
+        try {
+            // 生成预签名URL
+            String presignedUrl = minioClient.getPresignedObjectUrl(
+                    GetPresignedObjectUrlArgs.builder()
+                            .method(method)
+                            .expiry(durationSeconds,timeUnit)
+                            .bucket(bucketName)
+                            .object(objectName)
+                            .extraQueryParams(extraQueryParams)
+                            .build());
+            // 返回预签名URL
+            return presignedUrl;
+        } catch (Exception e) {
+            logger.error("生成预签名URL失败: {}", e.getMessage());
+            // 返回空字符串或者抛出异常，根据您的需求进行处理
+            return "";
+        }
+    }
+    public boolean copyBucketItem2OtherBucket(String sourceBucketName,String sourceObjectName,String targetBucketName,String targetObjectName){
+        log.info("复制文件至其他桶|参数|sourceBucketName:{}|sourceObjectName:{}|targetBucketName:{}|targetObjectName:{}"
+                ,sourceBucketName,sourceObjectName,targetBucketName,targetObjectName);
+        //判断目标桶是否存在
+        boolean isExist = bucketExists(targetBucketName);
+        if (!isExist){
+            boolean publicBucket = createPublicBucket(targetBucketName);
+            if (!publicBucket){
+                return false;
+            }
+        }
+        String sourceUrl=ENDPOINT+sourceBucketName+sourceObjectName;
+        String newUrl=ENDPOINT+targetBucketName+targetObjectName;
+        //判断公开桶里是否已经有该文件了
+        Boolean existsObject = existsObject(targetBucketName, targetObjectName);
+        if (existsObject){
+            log.info("复制文件至公开桶|结果|文件已经存在|路径:{}",newUrl);
+            return true;
+        }
+        try {
+            ObjectWriteResponse objectWriteResponse = minioClient.copyObject(
+                    CopyObjectArgs.builder()
+                            .source(CopySource.builder().bucket(sourceBucketName).object(sourceObjectName).build())
+                            .bucket(targetBucketName)
+                            .object(targetObjectName)
+                            .build());
+        } catch (Exception e) {
+            log.info("复制文件至其他桶出现错误:{}",e.toString());
+            return false;
+        }
+
+        log.info("复制文件至其他桶|结果|成功|原路径:{}",sourceUrl);
+        log.info("复制文件至其他桶|结果|成功|新路径:{}",newUrl);
+        return true;
+    }
 
 
+    public boolean copyBucketItem2PublicBucket(String sourceBucketName,String sourceObjectName,String targetObjectName) {
+        log.info("复制文件至公开桶|参数|sourceBucketName:{}|sourceObjectName:{}|targetBucketName:{}|targetObjectName:{}"
+                ,sourceBucketName,sourceObjectName,shareForever,targetObjectName);
+        //判断公开桶是否存在
+        boolean isExist = bucketExists(shareForever);
+        if (!isExist){
+            boolean publicBucket = createPublicBucket(shareForever);
+            if (!publicBucket){
+                return false;
+            }
+        }
+        String sourceUrl=ENDPOINT+sourceBucketName+sourceObjectName;
+        String newUrl=ENDPOINT+shareForever+targetObjectName;
+        //判断公开桶里是否已经有该文件了
+        Boolean existsObject = existsObject(shareForever, targetObjectName);
+        if (existsObject){
+            log.info("复制文件至公开桶|结果|文件已经存在|路径:{}",newUrl);
+            return true;
+        }
+        try {
+            ObjectWriteResponse objectWriteResponse = minioClient.copyObject(
+                    CopyObjectArgs.builder()
+                            .source(CopySource.builder().bucket(sourceBucketName).object(sourceObjectName).build())
+                            .bucket(shareForever)
+                            .object(targetObjectName)
+                            .build());
+        } catch (Exception e) {
+            log.info("复制文件至公开桶出现错误:{}",e.toString());
+            return false;
+        }
 
-
+        log.info("复制文件至公开桶|结果|成功|原路径:{}",sourceUrl);
+        log.info("复制文件至公开桶|结果|成功|新路径:{}",newUrl);
+        return true;
+    }
 }

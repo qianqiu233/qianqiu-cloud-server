@@ -325,52 +325,52 @@ public class FileShareExample {
             return (Criteria) this;
         }
 
-        public Criteria andValidTypeEqualTo(Boolean value) {
+        public Criteria andValidTypeEqualTo(Integer value) {
             addCriterion("valid_type =", value, "validType");
             return (Criteria) this;
         }
 
-        public Criteria andValidTypeNotEqualTo(Boolean value) {
+        public Criteria andValidTypeNotEqualTo(Integer value) {
             addCriterion("valid_type <>", value, "validType");
             return (Criteria) this;
         }
 
-        public Criteria andValidTypeGreaterThan(Boolean value) {
+        public Criteria andValidTypeGreaterThan(Integer value) {
             addCriterion("valid_type >", value, "validType");
             return (Criteria) this;
         }
 
-        public Criteria andValidTypeGreaterThanOrEqualTo(Boolean value) {
+        public Criteria andValidTypeGreaterThanOrEqualTo(Integer value) {
             addCriterion("valid_type >=", value, "validType");
             return (Criteria) this;
         }
 
-        public Criteria andValidTypeLessThan(Boolean value) {
+        public Criteria andValidTypeLessThan(Integer value) {
             addCriterion("valid_type <", value, "validType");
             return (Criteria) this;
         }
 
-        public Criteria andValidTypeLessThanOrEqualTo(Boolean value) {
+        public Criteria andValidTypeLessThanOrEqualTo(Integer value) {
             addCriterion("valid_type <=", value, "validType");
             return (Criteria) this;
         }
 
-        public Criteria andValidTypeIn(List<Boolean> values) {
+        public Criteria andValidTypeIn(List<Integer> values) {
             addCriterion("valid_type in", values, "validType");
             return (Criteria) this;
         }
 
-        public Criteria andValidTypeNotIn(List<Boolean> values) {
+        public Criteria andValidTypeNotIn(List<Integer> values) {
             addCriterion("valid_type not in", values, "validType");
             return (Criteria) this;
         }
 
-        public Criteria andValidTypeBetween(Boolean value1, Boolean value2) {
+        public Criteria andValidTypeBetween(Integer value1, Integer value2) {
             addCriterion("valid_type between", value1, value2, "validType");
             return (Criteria) this;
         }
 
-        public Criteria andValidTypeNotBetween(Boolean value1, Boolean value2) {
+        public Criteria andValidTypeNotBetween(Integer value1, Integer value2) {
             addCriterion("valid_type not between", value1, value2, "validType");
             return (Criteria) this;
         }
@@ -622,6 +622,146 @@ public class FileShareExample {
 
         public Criteria andShowCountNotBetween(Integer value1, Integer value2) {
             addCriterion("show_count not between", value1, value2, "showCount");
+            return (Criteria) this;
+        }
+
+        public Criteria andSharePathIsNull() {
+            addCriterion("share_path is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSharePathIsNotNull() {
+            addCriterion("share_path is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSharePathEqualTo(String value) {
+            addCriterion("share_path =", value, "sharePath");
+            return (Criteria) this;
+        }
+
+        public Criteria andSharePathNotEqualTo(String value) {
+            addCriterion("share_path <>", value, "sharePath");
+            return (Criteria) this;
+        }
+
+        public Criteria andSharePathGreaterThan(String value) {
+            addCriterion("share_path >", value, "sharePath");
+            return (Criteria) this;
+        }
+
+        public Criteria andSharePathGreaterThanOrEqualTo(String value) {
+            addCriterion("share_path >=", value, "sharePath");
+            return (Criteria) this;
+        }
+
+        public Criteria andSharePathLessThan(String value) {
+            addCriterion("share_path <", value, "sharePath");
+            return (Criteria) this;
+        }
+
+        public Criteria andSharePathLessThanOrEqualTo(String value) {
+            addCriterion("share_path <=", value, "sharePath");
+            return (Criteria) this;
+        }
+
+        public Criteria andSharePathLike(String value) {
+            addCriterion("share_path like", value, "sharePath");
+            return (Criteria) this;
+        }
+
+        public Criteria andSharePathNotLike(String value) {
+            addCriterion("share_path not like", value, "sharePath");
+            return (Criteria) this;
+        }
+
+        public Criteria andSharePathIn(List<String> values) {
+            addCriterion("share_path in", values, "sharePath");
+            return (Criteria) this;
+        }
+
+        public Criteria andSharePathNotIn(List<String> values) {
+            addCriterion("share_path not in", values, "sharePath");
+            return (Criteria) this;
+        }
+
+        public Criteria andSharePathBetween(String value1, String value2) {
+            addCriterion("share_path between", value1, value2, "sharePath");
+            return (Criteria) this;
+        }
+
+        public Criteria andSharePathNotBetween(String value1, String value2) {
+            addCriterion("share_path not between", value1, value2, "sharePath");
+            return (Criteria) this;
+        }
+
+        public Criteria andWebShareUrlIsNull() {
+            addCriterion("web_share_url is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andWebShareUrlIsNotNull() {
+            addCriterion("web_share_url is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andWebShareUrlEqualTo(String value) {
+            addCriterion("web_share_url =", value, "webShareUrl");
+            return (Criteria) this;
+        }
+
+        public Criteria andWebShareUrlNotEqualTo(String value) {
+            addCriterion("web_share_url <>", value, "webShareUrl");
+            return (Criteria) this;
+        }
+
+        public Criteria andWebShareUrlGreaterThan(String value) {
+            addCriterion("web_share_url >", value, "webShareUrl");
+            return (Criteria) this;
+        }
+
+        public Criteria andWebShareUrlGreaterThanOrEqualTo(String value) {
+            addCriterion("web_share_url >=", value, "webShareUrl");
+            return (Criteria) this;
+        }
+
+        public Criteria andWebShareUrlLessThan(String value) {
+            addCriterion("web_share_url <", value, "webShareUrl");
+            return (Criteria) this;
+        }
+
+        public Criteria andWebShareUrlLessThanOrEqualTo(String value) {
+            addCriterion("web_share_url <=", value, "webShareUrl");
+            return (Criteria) this;
+        }
+
+        public Criteria andWebShareUrlLike(String value) {
+            addCriterion("web_share_url like", value, "webShareUrl");
+            return (Criteria) this;
+        }
+
+        public Criteria andWebShareUrlNotLike(String value) {
+            addCriterion("web_share_url not like", value, "webShareUrl");
+            return (Criteria) this;
+        }
+
+        public Criteria andWebShareUrlIn(List<String> values) {
+            addCriterion("web_share_url in", values, "webShareUrl");
+            return (Criteria) this;
+        }
+
+        public Criteria andWebShareUrlNotIn(List<String> values) {
+            addCriterion("web_share_url not in", values, "webShareUrl");
+            return (Criteria) this;
+        }
+
+        public Criteria andWebShareUrlBetween(String value1, String value2) {
+            addCriterion("web_share_url between", value1, value2, "webShareUrl");
+            return (Criteria) this;
+        }
+
+        public Criteria andWebShareUrlNotBetween(String value1, String value2) {
+            addCriterion("web_share_url not between", value1, value2, "webShareUrl");
             return (Criteria) this;
         }
     }

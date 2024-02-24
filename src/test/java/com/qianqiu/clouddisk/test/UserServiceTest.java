@@ -77,4 +77,9 @@ public class UserServiceTest {
         System.out.println(sum);
 
     }
+    @Test
+    void te(){
+        UserInfo userInfo = new UserInfo();
+
+    }
 }

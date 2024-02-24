@@ -35,7 +35,7 @@ public class FileShare implements Serializable {
      * @mbg.generated
      */
     @Schema(description = "有效期类型 0:1天 1:7天 2:30天 3:永久有效")
-    private Boolean validType;
+    private Integer validType;
 
     /**
      * 失效时间
@@ -69,6 +69,30 @@ public class FileShare implements Serializable {
     @Schema(description = "浏览次数")
     private Integer showCount;
 
+    /**
+     * 分享文件路径
+     *
+     * @mbg.generated
+     */
+    @Schema(description = "分享文件路径")
+    private String sharePath;
+
+    /**
+     * 外部分享
+     *
+     * @mbg.generated
+     */
+    @Schema(description = "外部分享")
+    private String webShareUrl;
+
+    /**
+     * 真正分享链接(服务器授权的)
+     *
+     * @mbg.generated
+     */
+    @Schema(description = "真正分享链接(服务器授权的)")
+    private String shareUrl;
+
     private static final long serialVersionUID = 1L;
 
     public String getShareId() {
@@ -95,11 +119,11 @@ public class FileShare implements Serializable {
         this.userId = userId;
     }
 
-    public Boolean getValidType() {
+    public Integer getValidType() {
         return validType;
     }
 
-    public void setValidType(Boolean validType) {
+    public void setValidType(Integer validType) {
         this.validType = validType;
     }
 
@@ -135,6 +159,30 @@ public class FileShare implements Serializable {
         this.showCount = showCount;
     }
 
+    public String getSharePath() {
+        return sharePath;
+    }
+
+    public void setSharePath(String sharePath) {
+        this.sharePath = sharePath;
+    }
+
+    public String getWebShareUrl() {
+        return webShareUrl;
+    }
+
+    public void setWebShareUrl(String webShareUrl) {
+        this.webShareUrl = webShareUrl;
+    }
+
+    public String getShareUrl() {
+        return shareUrl;
+    }
+
+    public void setShareUrl(String shareUrl) {
+        this.shareUrl = shareUrl;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -149,6 +197,9 @@ public class FileShare implements Serializable {
         sb.append(", shareTime=").append(shareTime);
         sb.append(", code=").append(code);
         sb.append(", showCount=").append(showCount);
+        sb.append(", sharePath=").append(sharePath);
+        sb.append(", webShareUrl=").append(webShareUrl);
+        sb.append(", shareUrl=").append(shareUrl);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

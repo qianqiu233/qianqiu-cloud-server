@@ -9,11 +9,11 @@ public class DefaultConstant {
     //默认邮箱验证码位数
     public static final Integer DEFAULT_CODE_NUM=6;
     //头像默认位置
-    public static final String DEFAULT_AVATAR_PACKAGE="/image/avatar";
+    public static final String DEFAULT_AVATAR_PACKAGE="image/avatar";
     //默认用户状态
     public static final Integer DEFAULT_USER_STATUS=1;
-    //默认用户总空间5G
-    public static final Long DEFAULT_USER_TOTAL_SPACE=5*1024*1024*1024L;
+    //默认用户总空间5G，按mb算
+    public static final Long DEFAULT_USER_TOTAL_SPACE=5*1024L;
     //默认用户使用空间
     public static final Long DEFAULT_USER_USE_SPACE=0L;
     //默认用户权限id
@@ -24,13 +24,15 @@ public class DefaultConstant {
     //默认开始初始化上传标志
     public static final String DEFAULT_UPLOAD_START="START";
 
-    //默认使用分片上传的文件的大小 200M
-    public static final Long DEFAULT_USE_SLICE_UPLOAD=5*1024*1024L;
+    public static final Long DEFAULT_MB=1024*1024L;
     //默认排序规则
     public static final String DEFAULT_SORT_FIELD="last_update_time";
     //升序
     public static final String DEFAULT_ASC=" asc";
     //降序
     public static final String DEFAULT_DESC=" desc";
+
+    public static final String DEFAULT_WEB_SHARE_URL="/share/";
+
 
 }

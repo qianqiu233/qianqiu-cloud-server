@@ -62,6 +62,16 @@ public class CommonResult <T>{
     public static <T> CommonResult<T> failed(String msg) {
         return new CommonResult<T>(ResultCode.FAILED.getCode(), msg, null);
     }
+    /**
+     * 失败 500
+     * 返回提示信息 msg和data
+     * @param msg
+     * @return
+     * @param <T>
+     */
+    public static <T> CommonResult<T> failed(T data,String msg) {
+        return new CommonResult<T>(ResultCode.FAILED.getCode(), msg, data);
+    }
 
     /**
      * 失败 500

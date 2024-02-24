@@ -16,6 +16,9 @@
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
     <result column="avatar_url" jdbcType="VARCHAR" property="avatarUrl" />
   </resultMap>
+  <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.qianqiu.clouddisk.mbg.mbg_model.UserInfo">
+    <result column="avatar_cover" jdbcType="LONGVARCHAR" property="avatarCover" />
+  </resultMap>
   <sql id="Example_Where_Clause">
     <where>
       <foreach collection="oredCriteria" item="criteria" separator="or">
@@ -78,6 +81,25 @@
     user_id, nick_name, email, qq_open_id, qq_avatar, password, create_time, last_login_time, 
     status, use_space, total_space, update_time, avatar_url
   </sql>
+  <sql id="Blob_Column_List">
+    avatar_cover
+  </sql>
+  <select id="selectByExampleWithBLOBs" parameterType="com.qianqiu.clouddisk.mbg.mbg_model.UserInfoExample" resultMap="ResultMapWithBLOBs">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from user_info
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
   <select id="selectByExample" parameterType="com.qianqiu.clouddisk.mbg.mbg_model.UserInfoExample" resultMap="BaseResultMap">
     select
     <if test="distinct">
@@ -92,9 +114,11 @@
       order by ${orderByClause}
     </if>
   </select>
-  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
     select 
     <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
     from user_info
     where user_id = #{userId,jdbcType=VARCHAR}
   </select>
@@ -113,12 +137,12 @@
       qq_open_id, qq_avatar, password, 
       create_time, last_login_time, status, 
       use_space, total_space, update_time, 
-      avatar_url)
+      avatar_url, avatar_cover)
     values (#{userId,jdbcType=VARCHAR}, #{nickName,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR}, 
       #{qqOpenId,jdbcType=VARCHAR}, #{qqAvatar,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, 
       #{createTime,jdbcType=TIMESTAMP}, #{lastLoginTime,jdbcType=TIMESTAMP}, #{status,jdbcType=INTEGER}, 
       #{useSpace,jdbcType=BIGINT}, #{totalSpace,jdbcType=BIGINT}, #{updateTime,jdbcType=TIMESTAMP}, 
-      #{avatarUrl,jdbcType=VARCHAR})
+      #{avatarUrl,jdbcType=VARCHAR}, #{avatarCover,jdbcType=LONGVARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.qianqiu.clouddisk.mbg.mbg_model.UserInfo">
     insert into user_info
@@ -162,6 +186,9 @@
       <if test="avatarUrl != null">
         avatar_url,
       </if>
+      <if test="avatarCover != null">
+        avatar_cover,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="userId != null">
@@ -202,6 +229,9 @@
       </if>
       <if test="avatarUrl != null">
         #{avatarUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="avatarCover != null">
+        #{avatarCover,jdbcType=LONGVARCHAR},
       </if>
     </trim>
   </insert>
@@ -253,7 +283,30 @@
       <if test="row.avatarUrl != null">
         avatar_url = #{row.avatarUrl,jdbcType=VARCHAR},
       </if>
+      <if test="row.avatarCover != null">
+        avatar_cover = #{row.avatarCover,jdbcType=LONGVARCHAR},
+      </if>
     </set>
+    <if test="example != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExampleWithBLOBs" parameterType="map">
+    update user_info
+    set user_id = #{row.userId,jdbcType=VARCHAR},
+      nick_name = #{row.nickName,jdbcType=VARCHAR},
+      email = #{row.email,jdbcType=VARCHAR},
+      qq_open_id = #{row.qqOpenId,jdbcType=VARCHAR},
+      qq_avatar = #{row.qqAvatar,jdbcType=VARCHAR},
+      password = #{row.password,jdbcType=VARCHAR},
+      create_time = #{row.createTime,jdbcType=TIMESTAMP},
+      last_login_time = #{row.lastLoginTime,jdbcType=TIMESTAMP},
+      status = #{row.status,jdbcType=INTEGER},
+      use_space = #{row.useSpace,jdbcType=BIGINT},
+      total_space = #{row.totalSpace,jdbcType=BIGINT},
+      update_time = #{row.updateTime,jdbcType=TIMESTAMP},
+      avatar_url = #{row.avatarUrl,jdbcType=VARCHAR},
+      avatar_cover = #{row.avatarCover,jdbcType=LONGVARCHAR}
     <if test="example != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -316,7 +369,27 @@
       <if test="avatarUrl != null">
         avatar_url = #{avatarUrl,jdbcType=VARCHAR},
       </if>
+      <if test="avatarCover != null">
+        avatar_cover = #{avatarCover,jdbcType=LONGVARCHAR},
+      </if>
     </set>
+    where user_id = #{userId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.qianqiu.clouddisk.mbg.mbg_model.UserInfo">
+    update user_info
+    set nick_name = #{nickName,jdbcType=VARCHAR},
+      email = #{email,jdbcType=VARCHAR},
+      qq_open_id = #{qqOpenId,jdbcType=VARCHAR},
+      qq_avatar = #{qqAvatar,jdbcType=VARCHAR},
+      password = #{password,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      last_login_time = #{lastLoginTime,jdbcType=TIMESTAMP},
+      status = #{status,jdbcType=INTEGER},
+      use_space = #{useSpace,jdbcType=BIGINT},
+      total_space = #{totalSpace,jdbcType=BIGINT},
+      update_time = #{updateTime,jdbcType=TIMESTAMP},
+      avatar_url = #{avatarUrl,jdbcType=VARCHAR},
+      avatar_cover = #{avatarCover,jdbcType=LONGVARCHAR}
     where user_id = #{userId,jdbcType=VARCHAR}
   </update>
   <update id="updateByPrimaryKey" parameterType="com.qianqiu.clouddisk.mbg.mbg_model.UserInfo">

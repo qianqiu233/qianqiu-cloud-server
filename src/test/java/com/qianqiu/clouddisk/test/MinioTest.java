@@ -5,6 +5,7 @@ import cn.hutool.json.JSONUtil;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.qianqiu.clouddisk.exception.CommonException;
+import com.qianqiu.clouddisk.model.dto.BucketPolicyConfigDTO;
 import com.qianqiu.clouddisk.model.dto.MinioUploadDTO;
 import com.qianqiu.clouddisk.utils.MinioUtil;
 import com.qianqiu.clouddisk.utils.commonResult.CommonPage;
@@ -13,6 +14,7 @@ import com.qianqiu.clouddisk.utils.commonResult.ResultCode;
 import io.minio.ListObjectsArgs;
 import io.minio.MinioClient;
 import io.minio.Result;
+import io.minio.http.Method;
 import io.minio.messages.Bucket;
 import io.minio.messages.Item;
 import io.minio.messages.Owner;
@@ -22,13 +24,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @SpringBootTest
 public class MinioTest {
@@ -125,5 +129,64 @@ public class MinioTest {
         boolean b = minioUtil.doesFolderExist("f85966923c7f4ffea07121ed2e9cb7c0", "test");
         System.out.println(b);
     }
+    @Test
+    void testShare(){
+        Integer time=30;
+        LocalDateTime currentTime = LocalDateTime.now();
+        Date startDateTime = Date.from(currentTime.atZone(ZoneId.systemDefault()).toInstant());
+        Date expirationDateTime = Date.from(currentTime.plusMinutes(time).atZone(ZoneId.systemDefault()).toInstant());
+//        String shareUrl = minioUtil.getShareUrl("f85966923c7f4ffea07121ed2e9cb7c0", "/image/7e07ff05799c779a0e7f91e698b61244_5917353942475831637.jpg", 1);
+//        System.out.println(shareUrl);
+        System.out.println(startDateTime);
+        System.out.println(expirationDateTime);
+    }
+    @Test
+    void testUploadLocalFile() {
+        String filePath="C:\\Users\\27996\\Pictures\\Saved Pictures\\ces.webp";
+        String bname="f85966923c7f4ffea07121ed2e9cb7c0";
+        String oname="/Thumbnail/ces.webp";
+        boolean b = minioUtil.uploadLocalFile(filePath, bname, oname);
+        System.out.println(b);
+    }
+    @Test
+    void testCreateBucketPolicyConfigDto(){
+        BucketPolicyConfigDTO bucketPolicyConfigDto = minioUtil.createBucketPolicyConfigDto("72a3a681f03e47999e7826e450ba9895");
+        Boolean aBoolean = minioUtil.updateBucketPolicy(bucketPolicyConfigDto, "72a3a681f03e47999e7826e450ba9895");
+        System.out.println(aBoolean);
+    }
+    @Test
+    void testGeneratePresignedUrl(){
+        String bucketName="72a3a681f03e47999e7826e450ba9895";
+        String objectName = "/video/测试1.mp4";
+        Integer durationSeconds=20;
+        Map<String,String> map=new HashMap<String, String>();
+        map.put("code","qianqiu");
+        String s = minioUtil.generatePresignedUrl(bucketName, objectName, Method.GET, durationSeconds, TimeUnit.MINUTES,map);
+        System.out.println(s);
+    }
+    @Test
+    void testCopyBucketItem2OtherBucket(){
+        String bucketName="72a3a681f03e47999e7826e450ba9895";
+        String objectName = "/video/测试1.mp4";
+        String targetObjectName ="/"+bucketName+objectName ;
+        boolean b = minioUtil.copyBucketItem2PublicBucket(bucketName, objectName, targetObjectName);
+        System.out.println(b);
+    }
+    @Test
+    void testAdmin(){
+            // 获取当前时间
+            Date currentDate = new Date();
+
+            // 创建SimpleDateFormat对象，并设置日期格式、时区和语言环境
+            SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US);
+            sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+            // 格式化当前时间
+            String formattedDate = sdf.format(currentDate);
+
+            System.out.println("Formatted Date: " + formattedDate);
+    }
+
+
 
 }

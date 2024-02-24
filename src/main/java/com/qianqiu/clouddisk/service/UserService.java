@@ -4,7 +4,7 @@ import com.qianqiu.clouddisk.mbg.mbg_model.FileInfo;
 import com.qianqiu.clouddisk.model.dto.UpdateUserPwdDTO;
 import com.qianqiu.clouddisk.model.vo.UserInfoVo;
 import com.qianqiu.clouddisk.utils.commonResult.CommonResult;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -16,11 +16,12 @@ public interface UserService {
     CommonResult updateUserAvatar(MultipartFile file) throws IOException;
     CommonResult updateUserPassword(UpdateUserPwdDTO updateUserPwdDTO);
 
-    CommonResult userLogout(HttpServletRequest request);
+    CommonResult userLogout(HttpSession session);
 
     UserInfoVo selectUserInfo(String userId);
 
     CommonResult getUseSpace();
     Boolean UpdateUserSpace(List<FileInfo> fileInfoList, int IncOrDec);
 
+    CommonResult refreshUserSpace();
 }

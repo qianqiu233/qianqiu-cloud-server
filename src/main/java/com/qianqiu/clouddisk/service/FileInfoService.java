@@ -31,4 +31,11 @@ public interface FileInfoService {
     CommonResult moveFileListToFolderByIds(MoveFileListToFolderByIdsDTO moveFileListToFolderByIdsDTO);
 
     CommonResult getFolderInfo(GetFolderInfoDTO getFolderInfoDTO);
+
+    CommonResult download(String dowToken);
+
+
+    CommonResult createDownloadToken(String fileId);
+    List<FileInfo> getFileAndChild(FileInfo fileInfo,List<FileInfo> fileList);
+    boolean hasMoreSpace(Long space);
 }

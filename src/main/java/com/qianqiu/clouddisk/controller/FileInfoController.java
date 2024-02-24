@@ -25,8 +25,6 @@ public class FileInfoController {
     @PostMapping("/getFileInfoList")
     @EnableCheck
     public CommonResult<CommonPage<FileInfo>> getFileInfoList(@RequestBody FileInfoDTO fileInfoDTO) {
-//        TODO 还需改进
-        System.out.println(fileInfoDTO.toString());
         return fileInfoService.getFileInfoList(fileInfoDTO);
     }
 
@@ -99,8 +97,20 @@ public class FileInfoController {
     }
     @Operation(summary = "获取目录信息", description = "文件")
     @PostMapping("/getFolderInfo")
-    public CommonResult getFolderInfo(@RequestBody  GetFolderInfoDTO getFolderInfoDTO ){
+    public CommonResult getFolderInfo(@RequestBody GetFolderInfoDTO getFolderInfoDTO ){
         System.out.println(getFolderInfoDTO);
         return fileInfoService.getFolderInfo(getFolderInfoDTO);
     }
+    @Operation(summary = "创建文件的下载链接", description = "文件")
+    @GetMapping("/createDownloadToken/{fileId}")
+    public CommonResult createDownloadToken(@PathVariable("fileId") String fileId){
+        return fileInfoService.createDownloadToken(fileId);
+    }
+    @Operation(summary = "下载文件", description = "文件")
+    @GetMapping("/download")
+    public CommonResult download(@RequestParam("dowToken") String dowToken){
+//        todo 还需修改
+        return fileInfoService.download(dowToken);
+    }
+
 }

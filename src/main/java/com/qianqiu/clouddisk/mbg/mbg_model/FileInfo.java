@@ -62,14 +62,6 @@ public class FileInfo implements Serializable {
     private String fileName;
 
     /**
-     * 封面
-     *
-     * @mbg.generated
-     */
-    @Schema(description = "封面")
-    private String fileCover;
-
-    /**
      * 文件路径
      *
      * @mbg.generated
@@ -134,12 +126,20 @@ public class FileInfo implements Serializable {
     private Date recoveryTime;
 
     /**
-     * 使用标记 0:删除  1:回收站  2:正常
+     * 使用标记 0:删除  1:回收站  2:正常 3：头像使用中 4历史头像
      *
      * @mbg.generated
      */
-    @Schema(description = "使用标记 0:删除  1:回收站  2:正常")
+    @Schema(description = "使用标记 0:删除  1:回收站  2:正常 3：头像使用中 4历史头像")
     private Integer useFlag;
+
+    /**
+     * 封面
+     *
+     * @mbg.generated
+     */
+    @Schema(description = "封面")
+    private String fileCover;
 
     private static final long serialVersionUID = 1L;
 
@@ -197,14 +197,6 @@ public class FileInfo implements Serializable {
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
-    }
-
-    public String getFileCover() {
-        return fileCover;
-    }
-
-    public void setFileCover(String fileCover) {
-        this.fileCover = fileCover;
     }
 
     public String getFilePath() {
@@ -279,6 +271,14 @@ public class FileInfo implements Serializable {
         this.useFlag = useFlag;
     }
 
+    public String getFileCover() {
+        return fileCover;
+    }
+
+    public void setFileCover(String fileCover) {
+        this.fileCover = fileCover;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -292,7 +292,6 @@ public class FileInfo implements Serializable {
         sb.append(", filePid=").append(filePid);
         sb.append(", fileSize=").append(fileSize);
         sb.append(", fileName=").append(fileName);
-        sb.append(", fileCover=").append(fileCover);
         sb.append(", filePath=").append(filePath);
         sb.append(", createTime=").append(createTime);
         sb.append(", lastUpdateTime=").append(lastUpdateTime);
@@ -302,6 +301,7 @@ public class FileInfo implements Serializable {
         sb.append(", status=").append(status);
         sb.append(", recoveryTime=").append(recoveryTime);
         sb.append(", useFlag=").append(useFlag);
+        sb.append(", fileCover=").append(fileCover);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

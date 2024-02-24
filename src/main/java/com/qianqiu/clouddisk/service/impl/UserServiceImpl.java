@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import cn.hutool.json.JSONUtil;
+import com.qianqiu.clouddisk.exception.CommonException;
 import com.qianqiu.clouddisk.mbg.mbg_mapper.*;
 import com.qianqiu.clouddisk.mbg.mbg_model.*;
 import com.qianqiu.clouddisk.model.dto.MinioUploadDTO;
@@ -13,11 +14,14 @@ import com.qianqiu.clouddisk.model.vo.UserSpaceInfoVo;
 import com.qianqiu.clouddisk.service.FileInfoService;
 import com.qianqiu.clouddisk.service.MinioService;
 import com.qianqiu.clouddisk.service.UserService;
+import com.qianqiu.clouddisk.utils.FFmepgUtil;
+import com.qianqiu.clouddisk.utils.FileAboutUtil;
 import com.qianqiu.clouddisk.utils.MinioUtil;
 import com.qianqiu.clouddisk.utils.UserThreadLocal;
 import com.qianqiu.clouddisk.utils.commonResult.CommonResult;
+import io.minio.http.Method;
 import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -30,6 +34,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.qianqiu.clouddisk.utils.Constant.DefaultConstant.DEFAULT_THUMBNAIL_PACKAGE;
 import static com.qianqiu.clouddisk.utils.Constant.RedisConstant.*;
 
 @Service
@@ -52,6 +57,8 @@ public class UserServiceImpl implements UserService {
     private FileInfoService fileInfoService;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private  FFmepgUtil fFmepgUtil;
 
     @Override
     public CommonResult<String> getAvatar() {
@@ -65,14 +72,15 @@ public class UserServiceImpl implements UserService {
             return CommonResult.success(userInfoVo.getAvatarUrl());
         }
         UserInfo userInfo = userInfoMapper.selectByPrimaryKey(userId);
-        String avatarUrl = userInfo.getAvatarUrl();
-        System.out.println(avatarUrl);
+        String avatarPath = userInfo.getAvatarUrl();
+        //redis没有，生成预期签名
+        //生成预签名，头像无所谓，一天的预签名吧，在退出的时候给它删除
+        String avatarUrl = minioUtil.generatePresignedUrl(userId, avatarPath, Method.GET, 1, TimeUnit.DAYS);
         return CommonResult.success(avatarUrl);
     }
 
     @Override
     public CommonResult updateUserAvatar(MultipartFile file) throws IOException {
-        // todo 还需判断数据库是否存在相同头像，存在，就直接将历史头像更新状态就好
         String userId = UserThreadLocal.getUserId();
         //获取md5值唯一标识
         byte[] fileBytes = file.getBytes();
@@ -81,14 +89,24 @@ public class UserServiceImpl implements UserService {
         if (minioUploadDto == null) {
             return CommonResult.failed("更新头像失败");
         }
+
+        String filename = file.getOriginalFilename();
+        String signatureUrl = minioUtil.generatePresignedUrl(userId, minioUploadDto.getFilePath(), Method.GET, 60, TimeUnit.SECONDS);
+        boolean thumbnail = fFmepgUtil.generateImageThumbnail(signatureUrl, filename);
+        if (!thumbnail){
+            throw new CommonException("更新头像失败");
+        }
         int saveCount = fileInfoService.saveAvatarToDB(minioUploadDto, userId, fileMd5);
         if (saveCount < 1) {
             return CommonResult.failed("更新头像失败");
         }
         //根据id修改数据库的avatarurl
+        String fileCoverPath = FileAboutUtil.fileToBase64(DEFAULT_THUMBNAIL_PACKAGE+filename);
+        FileAboutUtil.delThumbnailPackageFileByName(filename);
         UserInfo userInfo = new UserInfo();
         userInfo.setUserId(userId);
-        userInfo.setAvatarUrl(minioUploadDto.getFileUrl());
+        userInfo.setAvatarCover(fileCoverPath);
+        userInfo.setAvatarUrl(minioUploadDto.getFilePath());
         userInfo.setUpdateTime(new Date());
 
         int count = userInfoMapper.updateByPrimaryKeySelective(userInfo);
@@ -101,6 +119,9 @@ public class UserServiceImpl implements UserService {
         stringRedisTemplate.delete(key);
         //重新存入
         UserInfoVo userInfoVo = selectUserInfo(userId);
+        String avatarPath = userInfoVo.getAvatarUrl();
+        String avatarUrl = minioUtil.generatePresignedUrl(userId, avatarPath, Method.GET, 1, TimeUnit.DAYS);
+        userInfoVo.setAvatarUrl(avatarUrl);
         stringRedisTemplate.opsForValue().set(key, JSONUtil.toJsonStr(userInfoVo), USER_INFO_KEY_TTL, TimeUnit.MINUTES);
         return CommonResult.success(minioUploadDto, "头像更新成功");
     }
@@ -133,8 +154,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public CommonResult userLogout(HttpServletRequest request) {
-        String token = request.getHeader("authorization");
+    public CommonResult userLogout(HttpSession session) {
+        session.invalidate();
+        String token = UserThreadLocal.getToken();
         String tokenKey = USER_INFO_KEY + token;
         stringRedisTemplate.delete(tokenKey);
         return CommonResult.success(null, "退出成功,请重新登录");
@@ -231,6 +253,24 @@ public class UserServiceImpl implements UserService {
         //更新缓存
         stringRedisTemplate.delete(key);
         return true;
+    }
+
+    @Override
+    public CommonResult refreshUserSpace() {
+        String userId = UserThreadLocal.getUserId();
+        String key = USER_SPACE_KEY + userId;
+        //删除redis
+        stringRedisTemplate.delete(key);
+        UserInfo userInfo = userInfoMapper.selectByPrimaryKey(userId);
+        Long useSpace=userInfo.getUseSpace();
+        Long totalSpace=userInfo.getTotalSpace();
+        UserSpaceInfoVo userSpaceInfoVo = UserSpaceInfoVo.builder()
+                .useSpace(useSpace)
+                .totalSpace(totalSpace)
+                .build();
+        //重新设置
+        stringRedisTemplate.opsForValue().set(key, JSONUtil.toJsonStr(userSpaceInfoVo),USER_SPACE_KEY_TTL,TimeUnit.MINUTES);
+        return CommonResult.success(userSpaceInfoVo);
     }
 
     /**

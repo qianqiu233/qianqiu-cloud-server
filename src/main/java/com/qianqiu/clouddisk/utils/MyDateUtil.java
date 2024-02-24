@@ -2,15 +2,20 @@ package com.qianqiu.clouddisk.utils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
-public class DateUtil {
+public class MyDateUtil {
 
     // 常量格式：年月日
     public static final String YMD = "yyyy-MM-dd";
 
     // 常量格式：小时分钟秒钟
     public static final String HMS = "HH:mm:ss";
+
+    //年月日小时分钟秒
+    public static final String YMDHMS = "yyyyMMddHHmmss";
+    public static final String YMDHM = "yyyy年MM月dd日HH:mm";
 
     // 格式化日期
     public static String format(Date date, String pattern) {
@@ -40,5 +45,13 @@ public class DateUtil {
             throw new IllegalArgumentException("解析日期字符串出现错误，可能不是一个正确的格式: " + dateString + " with pattern: " + pattern, e);
         }
     }
+
+    public static Date getAfterDate(Date date, Integer day) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.DAY_OF_YEAR, day);
+        return calendar.getTime();
+    }
+
 
 }

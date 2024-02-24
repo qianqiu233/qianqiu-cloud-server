@@ -5,11 +5,16 @@
     <id column="share_id" jdbcType="VARCHAR" property="shareId" />
     <result column="file_id" jdbcType="VARCHAR" property="fileId" />
     <result column="user_id" jdbcType="VARCHAR" property="userId" />
-    <result column="valid_type" jdbcType="BIT" property="validType" />
+    <result column="valid_type" jdbcType="INTEGER" property="validType" />
     <result column="expire_time" jdbcType="TIMESTAMP" property="expireTime" />
     <result column="share_time" jdbcType="TIMESTAMP" property="shareTime" />
     <result column="code" jdbcType="VARCHAR" property="code" />
     <result column="show_count" jdbcType="INTEGER" property="showCount" />
+    <result column="share_path" jdbcType="VARCHAR" property="sharePath" />
+    <result column="web_share_url" jdbcType="VARCHAR" property="webShareUrl" />
+  </resultMap>
+  <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.qianqiu.clouddisk.mbg.mbg_model.FileShare">
+    <result column="share_url" jdbcType="LONGVARCHAR" property="shareUrl" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <where>
@@ -70,8 +75,28 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    share_id, file_id, user_id, valid_type, expire_time, share_time, code, show_count
+    share_id, file_id, user_id, valid_type, expire_time, share_time, code, show_count, 
+    share_path, web_share_url
   </sql>
+  <sql id="Blob_Column_List">
+    share_url
+  </sql>
+  <select id="selectByExampleWithBLOBs" parameterType="com.qianqiu.clouddisk.mbg.mbg_model.FileShareExample" resultMap="ResultMapWithBLOBs">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from file_share
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
   <select id="selectByExample" parameterType="com.qianqiu.clouddisk.mbg.mbg_model.FileShareExample" resultMap="BaseResultMap">
     select
     <if test="distinct">
@@ -86,9 +111,11 @@
       order by ${orderByClause}
     </if>
   </select>
-  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
     select 
     <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
     from file_share
     where share_id = #{shareId,jdbcType=VARCHAR}
   </select>
@@ -105,10 +132,12 @@
   <insert id="insert" parameterType="com.qianqiu.clouddisk.mbg.mbg_model.FileShare">
     insert into file_share (share_id, file_id, user_id, 
       valid_type, expire_time, share_time, 
-      code, show_count)
+      code, show_count, share_path, 
+      web_share_url, share_url)
     values (#{shareId,jdbcType=VARCHAR}, #{fileId,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR}, 
-      #{validType,jdbcType=BIT}, #{expireTime,jdbcType=TIMESTAMP}, #{shareTime,jdbcType=TIMESTAMP}, 
-      #{code,jdbcType=VARCHAR}, #{showCount,jdbcType=INTEGER})
+      #{validType,jdbcType=INTEGER}, #{expireTime,jdbcType=TIMESTAMP}, #{shareTime,jdbcType=TIMESTAMP}, 
+      #{code,jdbcType=VARCHAR}, #{showCount,jdbcType=INTEGER}, #{sharePath,jdbcType=VARCHAR}, 
+      #{webShareUrl,jdbcType=VARCHAR}, #{shareUrl,jdbcType=LONGVARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.qianqiu.clouddisk.mbg.mbg_model.FileShare">
     insert into file_share
@@ -137,6 +166,15 @@
       <if test="showCount != null">
         show_count,
       </if>
+      <if test="sharePath != null">
+        share_path,
+      </if>
+      <if test="webShareUrl != null">
+        web_share_url,
+      </if>
+      <if test="shareUrl != null">
+        share_url,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="shareId != null">
@@ -149,7 +187,7 @@
         #{userId,jdbcType=VARCHAR},
       </if>
       <if test="validType != null">
-        #{validType,jdbcType=BIT},
+        #{validType,jdbcType=INTEGER},
       </if>
       <if test="expireTime != null">
         #{expireTime,jdbcType=TIMESTAMP},
@@ -162,6 +200,15 @@
       </if>
       <if test="showCount != null">
         #{showCount,jdbcType=INTEGER},
+      </if>
+      <if test="sharePath != null">
+        #{sharePath,jdbcType=VARCHAR},
+      </if>
+      <if test="webShareUrl != null">
+        #{webShareUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="shareUrl != null">
+        #{shareUrl,jdbcType=LONGVARCHAR},
       </if>
     </trim>
   </insert>
@@ -184,7 +231,7 @@
         user_id = #{row.userId,jdbcType=VARCHAR},
       </if>
       <if test="row.validType != null">
-        valid_type = #{row.validType,jdbcType=BIT},
+        valid_type = #{row.validType,jdbcType=INTEGER},
       </if>
       <if test="row.expireTime != null">
         expire_time = #{row.expireTime,jdbcType=TIMESTAMP},
@@ -198,7 +245,33 @@
       <if test="row.showCount != null">
         show_count = #{row.showCount,jdbcType=INTEGER},
       </if>
+      <if test="row.sharePath != null">
+        share_path = #{row.sharePath,jdbcType=VARCHAR},
+      </if>
+      <if test="row.webShareUrl != null">
+        web_share_url = #{row.webShareUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="row.shareUrl != null">
+        share_url = #{row.shareUrl,jdbcType=LONGVARCHAR},
+      </if>
     </set>
+    <if test="example != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExampleWithBLOBs" parameterType="map">
+    update file_share
+    set share_id = #{row.shareId,jdbcType=VARCHAR},
+      file_id = #{row.fileId,jdbcType=VARCHAR},
+      user_id = #{row.userId,jdbcType=VARCHAR},
+      valid_type = #{row.validType,jdbcType=INTEGER},
+      expire_time = #{row.expireTime,jdbcType=TIMESTAMP},
+      share_time = #{row.shareTime,jdbcType=TIMESTAMP},
+      code = #{row.code,jdbcType=VARCHAR},
+      show_count = #{row.showCount,jdbcType=INTEGER},
+      share_path = #{row.sharePath,jdbcType=VARCHAR},
+      web_share_url = #{row.webShareUrl,jdbcType=VARCHAR},
+      share_url = #{row.shareUrl,jdbcType=LONGVARCHAR}
     <if test="example != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -208,11 +281,13 @@
     set share_id = #{row.shareId,jdbcType=VARCHAR},
       file_id = #{row.fileId,jdbcType=VARCHAR},
       user_id = #{row.userId,jdbcType=VARCHAR},
-      valid_type = #{row.validType,jdbcType=BIT},
+      valid_type = #{row.validType,jdbcType=INTEGER},
       expire_time = #{row.expireTime,jdbcType=TIMESTAMP},
       share_time = #{row.shareTime,jdbcType=TIMESTAMP},
       code = #{row.code,jdbcType=VARCHAR},
-      show_count = #{row.showCount,jdbcType=INTEGER}
+      show_count = #{row.showCount,jdbcType=INTEGER},
+      share_path = #{row.sharePath,jdbcType=VARCHAR},
+      web_share_url = #{row.webShareUrl,jdbcType=VARCHAR}
     <if test="example != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -227,7 +302,7 @@
         user_id = #{userId,jdbcType=VARCHAR},
       </if>
       <if test="validType != null">
-        valid_type = #{validType,jdbcType=BIT},
+        valid_type = #{validType,jdbcType=INTEGER},
       </if>
       <if test="expireTime != null">
         expire_time = #{expireTime,jdbcType=TIMESTAMP},
@@ -241,18 +316,43 @@
       <if test="showCount != null">
         show_count = #{showCount,jdbcType=INTEGER},
       </if>
+      <if test="sharePath != null">
+        share_path = #{sharePath,jdbcType=VARCHAR},
+      </if>
+      <if test="webShareUrl != null">
+        web_share_url = #{webShareUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="shareUrl != null">
+        share_url = #{shareUrl,jdbcType=LONGVARCHAR},
+      </if>
     </set>
+    where share_id = #{shareId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.qianqiu.clouddisk.mbg.mbg_model.FileShare">
+    update file_share
+    set file_id = #{fileId,jdbcType=VARCHAR},
+      user_id = #{userId,jdbcType=VARCHAR},
+      valid_type = #{validType,jdbcType=INTEGER},
+      expire_time = #{expireTime,jdbcType=TIMESTAMP},
+      share_time = #{shareTime,jdbcType=TIMESTAMP},
+      code = #{code,jdbcType=VARCHAR},
+      show_count = #{showCount,jdbcType=INTEGER},
+      share_path = #{sharePath,jdbcType=VARCHAR},
+      web_share_url = #{webShareUrl,jdbcType=VARCHAR},
+      share_url = #{shareUrl,jdbcType=LONGVARCHAR}
     where share_id = #{shareId,jdbcType=VARCHAR}
   </update>
   <update id="updateByPrimaryKey" parameterType="com.qianqiu.clouddisk.mbg.mbg_model.FileShare">
     update file_share
     set file_id = #{fileId,jdbcType=VARCHAR},
       user_id = #{userId,jdbcType=VARCHAR},
-      valid_type = #{validType,jdbcType=BIT},
+      valid_type = #{validType,jdbcType=INTEGER},
       expire_time = #{expireTime,jdbcType=TIMESTAMP},
       share_time = #{shareTime,jdbcType=TIMESTAMP},
       code = #{code,jdbcType=VARCHAR},
-      show_count = #{showCount,jdbcType=INTEGER}
+      show_count = #{showCount,jdbcType=INTEGER},
+      share_path = #{sharePath,jdbcType=VARCHAR},
+      web_share_url = #{webShareUrl,jdbcType=VARCHAR}
     where share_id = #{shareId,jdbcType=VARCHAR}
   </update>
 </mapper>

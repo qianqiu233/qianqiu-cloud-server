@@ -16,15 +16,21 @@ public interface UserInfoMapper {
 
     int insertSelective(UserInfo row);
 
+    List<UserInfo> selectByExampleWithBLOBs(UserInfoExample example);
+
     List<UserInfo> selectByExample(UserInfoExample example);
 
     UserInfo selectByPrimaryKey(String userId);
 
     int updateByExampleSelective(@Param("row") UserInfo row, @Param("example") UserInfoExample example);
 
+    int updateByExampleWithBLOBs(@Param("row") UserInfo row, @Param("example") UserInfoExample example);
+
     int updateByExample(@Param("row") UserInfo row, @Param("example") UserInfoExample example);
 
     int updateByPrimaryKeySelective(UserInfo row);
+
+    int updateByPrimaryKeyWithBLOBs(UserInfo row);
 
     int updateByPrimaryKey(UserInfo row);
 }

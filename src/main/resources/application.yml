@@ -80,5 +80,8 @@ minio:
   accessKey: minioadmin # 访问的key
   secretKey: minioadmin # 访问的秘钥
   defaultSliceBucketName: slice
+  defaultShareForeverBucket: shareforever
 #ffmpegPath地址
 ffmpegPath: E:/JavaStudySource/otherSoftware/ffmpeg-6.1.1-essentials_build/bin/ffmpeg.exe
+#前端地址(部署后换成服务器地址)
+webBaseAddr: http://127.0.0.1:8089

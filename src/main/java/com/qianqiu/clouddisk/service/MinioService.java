@@ -1,7 +1,9 @@
 package com.qianqiu.clouddisk.service;
 
+import com.qianqiu.clouddisk.mbg.mbg_model.FileShare;
 import com.qianqiu.clouddisk.model.dto.InitSliceUploadFileDTO;
 import com.qianqiu.clouddisk.model.dto.MinioUploadDTO;
+import com.qianqiu.clouddisk.utils.enums.ShareValidTypeEnums;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -39,4 +41,11 @@ public interface MinioService {
 
     Boolean delSliceFile(String bucketName, Integer chunks,String chunkObjectName);
     Boolean delFiles(String bucketName, List<String> delObjectList);
+    MinioUploadDTO createFolder(String folderName, String bucketName,String filePid);
+    FileShare fileShare(String bucketName, String objectName, ShareValidTypeEnums time, String shareCode);
+    boolean cancelShareList(String bucketName, List<String> objectNameList, Integer time);
+    String uploadThumbnail(String localFilePath, String bucketName,String objectName);
+
+    boolean cancelShareListMoreThan30(List<String> filePathListMoreThan30);
+    String copyBucketItem2OtherBucket(String sourceBucketName,String sourceObjectName,String targetBucketName,String targetObjectName);
 }

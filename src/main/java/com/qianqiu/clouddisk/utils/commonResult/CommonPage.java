@@ -17,14 +17,14 @@ public class CommonPage<T> {
     private Long total;
     private List<T> list;
 
-//    public CommonPage(Integer pageNum, Integer pageSize) {
-//        this.pageNum = pageNum;
-//        this.pageSize = pageSize;
-//    }
-//
-//    public CommonPage() {
-//
-//    }
+    public CommonPage(Integer pageNum, Integer pageSize) {
+        this.pageNum = pageNum;
+        this.pageSize = pageSize;
+    }
+
+    public CommonPage() {
+
+    }
 
     /**
      * 将PageHelper分页后的list转为分页信息
@@ -40,22 +40,22 @@ public class CommonPage<T> {
         return result;
     }
 
-//    public static <T> CommonPage<T> setPage(List<T> list, Integer pageNum, Integer pageSize) {
-//        if (pageNum == null || pageNum < 1) {
-//            pageNum = 1;
-//        }
-//        if (pageSize == null || pageSize < 0) {
-//            pageSize = 3;
-//        }
-//        CommonPage<T> commonPage = new CommonPage<T>(pageNum, pageSize);
-//
-//        commonPage.setTotal((long) list.size());
-//        commonPage.setList(list);
-//        int startIndex = (pageNum - 1) * pageSize;
-//        int endIndex = Math.min(startIndex + pageSize, list.size());
-//        commonPage.setList(list.subList(startIndex, endIndex));
-//        return commonPage;
-//    }
+    public static <T> CommonPage<T> setPage(List<T> list, Integer pageNum, Integer pageSize) {
+        if (pageNum == null || pageNum < 1) {
+            pageNum = 1;
+        }
+        if (pageSize == null || pageSize < 0) {
+            pageSize = 15;
+        }
+        CommonPage<T> commonPage = new CommonPage<T>(pageNum, pageSize);
+
+        commonPage.setTotal((long) list.size());
+        commonPage.setList(list);
+        int startIndex = (pageNum - 1) * pageSize;
+        int endIndex = Math.min(startIndex + pageSize, list.size());
+        commonPage.setList(list.subList(startIndex, endIndex));
+        return commonPage;
+    }
 
 
     public Integer getPageNum() {

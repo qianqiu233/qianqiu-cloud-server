@@ -16,15 +16,21 @@ public interface FileShareMapper {
 
     int insertSelective(FileShare row);
 
+    List<FileShare> selectByExampleWithBLOBs(FileShareExample example);
+
     List<FileShare> selectByExample(FileShareExample example);
 
     FileShare selectByPrimaryKey(String shareId);
 
     int updateByExampleSelective(@Param("row") FileShare row, @Param("example") FileShareExample example);
 
+    int updateByExampleWithBLOBs(@Param("row") FileShare row, @Param("example") FileShareExample example);
+
     int updateByExample(@Param("row") FileShare row, @Param("example") FileShareExample example);
 
     int updateByPrimaryKeySelective(FileShare row);
+
+    int updateByPrimaryKeyWithBLOBs(FileShare row);
 
     int updateByPrimaryKey(FileShare row);
 }

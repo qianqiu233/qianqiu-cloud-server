@@ -5,7 +5,8 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.json.JSONUtil;
 import com.qianqiu.clouddisk.mbg.mbg_mapper.FileInfoMapper;
 import com.qianqiu.clouddisk.mbg.mbg_model.FileInfo;
-import com.qianqiu.clouddisk.utils.DateUtil;
+import com.qianqiu.clouddisk.service.FileInfoService;
+import com.qianqiu.clouddisk.utils.MyDateUtil;
 import com.qianqiu.clouddisk.utils.FFmepgUtil;
 import com.qianqiu.clouddisk.utils.FileAboutUtil;
 import jakarta.annotation.Resource;
@@ -29,6 +30,8 @@ class QianqiuCloudServerApplicationTests {
     private FFmepgUtil fuUtil;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private FileInfoService fileInfoService;
 
     @Test
     void contextLoads() {
@@ -52,8 +55,8 @@ class QianqiuCloudServerApplicationTests {
     @Test
     void testDate() {
         Date date = new Date();
-        String format = DateUtil.format(date, DateUtil.YMD);
-        String format1 = DateUtil.format(date, DateUtil.HMS);
+        String format = MyDateUtil.format(date, MyDateUtil.YMD);
+        String format1 = MyDateUtil.format(date, MyDateUtil.HMS);
         System.out.println(date);
         System.out.println(format);
         System.out.println(format1);
@@ -232,4 +235,23 @@ class QianqiuCloudServerApplicationTests {
         System.out.println("最后一个数据的下标: " + lastIndex);
         System.out.println("最后一个数据的值: " + lastElement);
     }
+    @Test
+    void testGetFileAndChild(){
+//111   88aa93ea32754c73a15b14046ec234e3  f85966923c7f4ffea07121ed2e9cb7c0
+        FileInfo fileInfo = fileInfoMapper.selectByPrimaryKey("88aa93ea32754c73a15b14046ec234e3", "f85966923c7f4ffea07121ed2e9cb7c0");
+        List<FileInfo> files = new ArrayList<FileInfo>();
+        files= fileInfoService.getFileAndChild(fileInfo, files);
+        for (FileInfo info : files) {
+            System.out.println(info.toString());
+        }
+    }
+    @Test
+    void test(){
+        String messageTemplate="你好，您的邮箱验证码是：%s，15分钟有效";
+        String message = String.format(messageTemplate, "qianqiu");
+        System.out.println(message);
+    }
+
+
+
 }

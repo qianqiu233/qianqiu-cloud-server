@@ -23,7 +23,8 @@ public class MvcConfig implements WebMvcConfigurer {
                         "/file/**",
                         "/userLogin/**",
                         "/user/**",
-                        "/qianqiu/**"
+                        "/qianqiu/**",
+                        "/showShare/**"
                 ).order(1);
         // token刷新的拦截器，拦截所有请求，
         registry.addInterceptor(new RefreshTokenInterceptor(stringRedisTemplate)).addPathPatterns("/**").order(0);

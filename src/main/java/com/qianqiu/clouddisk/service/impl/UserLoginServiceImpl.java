@@ -21,13 +21,13 @@ import com.qianqiu.clouddisk.service.UserService;
 import com.qianqiu.clouddisk.utils.CaptchaUtil;
 import com.qianqiu.clouddisk.utils.MailUtil;
 import com.qianqiu.clouddisk.utils.MinioUtil;
-import com.qianqiu.clouddisk.utils.Regexs.RegexPatterns;
 import com.qianqiu.clouddisk.utils.Regexs.RegexUtils;
-import com.qianqiu.clouddisk.utils.UserThreadLocal;
 import com.qianqiu.clouddisk.utils.commonResult.CommonResult;
 import com.wf.captcha.base.Captcha;
+import io.minio.http.Method;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,7 +35,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -129,12 +128,19 @@ public class UserLoginServiceImpl implements UserLoginService {
         userInfo.setUpdateTime(new Date());
         userInfo.setPassword(password);
         userInfo.setNickName(nickName);
-//        todo 到时后写成默认常量
+        String redisSystem = stringRedisTemplate.opsForValue().get(SYSTEM_KEY);
+        if (StrUtil.isNotBlank(redisSystem)){
+            SysSettingDTO sysSettingDTO = JSONUtil.toBean(redisSystem, SysSettingDTO.class);
+            Long userInitTotalSpace = sysSettingDTO.getUserInitTotalSpace();
+            userInfo.setTotalSpace(userInitTotalSpace*DEFAULT_MB);
+        }else{
+            SysSettingDTO sysSettingDTO = new SysSettingDTO();
+            Long userInitTotalSpace = sysSettingDTO.getUserInitTotalSpace();
+            userInfo.setTotalSpace(userInitTotalSpace*DEFAULT_MB);
+        }
         userInfo.setStatus(DEFAULT_USER_STATUS);
-        userInfo.setTotalSpace(DEFAULT_USER_TOTAL_SPACE);
         userInfo.setUseSpace(DEFAULT_USER_USE_SPACE);
         minioUtil.createBucket(userId);
-//        todo 到时这里得写一个专门的默认类
         String avatarUrl=ENDPOINT + defaultBucketName+"/default.png";
         userInfo.setAvatarUrl(avatarUrl);
         //设置角色权限
@@ -175,14 +181,27 @@ public class UserLoginServiceImpl implements UserLoginService {
             }
         }
         String emailCode = RandomUtil.randomNumbers(DEFAULT_CODE_NUM);
-        mailUtil.sendSampleMail(email,"验证码",emailCode);
+        String redisSystem = stringRedisTemplate.opsForValue().get(SYSTEM_KEY);
+        String registerEmailTitle="";
+        String registerEmailContent="";
+        if (StrUtil.isBlank(redisSystem)){
+            SysSettingDTO sysSettingDTO = new SysSettingDTO();
+            registerEmailTitle= sysSettingDTO.getRegisterEmailTitle();
+            registerEmailContent = sysSettingDTO.getRegisterEmailContent();
+        }else {
+            SysSettingDTO sysSettingDTO = JSONUtil.toBean(redisSystem, SysSettingDTO.class);
+            registerEmailTitle= sysSettingDTO.getRegisterEmailTitle();
+            registerEmailContent = sysSettingDTO.getRegisterEmailContent();
+        }
+        String content = String.format(registerEmailContent, emailCode);
+        mailUtil.sendSampleMail(email,registerEmailTitle,content);
 //        发送到邮箱的验证码
         String emailKey=LOGIN_CODE_EMAIL_KEY+email;
         stringRedisTemplate.opsForValue().set(emailKey,emailCode,LOGIN_CODE_EMAIL_KEY_TTL,TimeUnit.MINUTES);
     }
 
     @Override
-    public CommonResult login(LoginDTO loginDTO) {
+    public CommonResult login(LoginDTO loginDTO, HttpSession session) {
         String email = loginDTO.getEmail();
         String checkCode = loginDTO.getCheckCode();
         String password = loginDTO.getPassword();
@@ -205,13 +224,16 @@ public class UserLoginServiceImpl implements UserLoginService {
         }
         String userId = userInfo.getUserId();
         UserInfoVo userInfoVo = userService.selectUserInfo(userId);
+        String avatarPath = userInfoVo.getAvatarUrl();
+        String avatarUrl = minioUtil.generatePresignedUrl(userId, avatarPath, Method.GET, 1, TimeUnit.DAYS);
+        userInfoVo.setAvatarUrl(avatarUrl);
         //  todo 后面可能使用jwt 先随机生成token，作为登录令牌
         String token = UUID.randomUUID().toString(true);
         String tokenKey = USER_INFO_KEY + token;
-
         stringRedisTemplate.opsForValue().set(tokenKey, JSONUtil.toJsonStr(userInfoVo),USER_INFO_KEY_TTL,TimeUnit.MINUTES);
         //又多加了个奇怪的东西
         UserLoginVo userLoginVo = new UserLoginVo(userInfoVo,token);
+        session.setAttribute("userId",userInfoVo.getUserId());
         return CommonResult.success(userLoginVo);
     }
 

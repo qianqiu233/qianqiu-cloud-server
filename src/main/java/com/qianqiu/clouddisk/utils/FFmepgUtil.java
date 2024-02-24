@@ -84,6 +84,7 @@ public class FFmepgUtil {
             process.waitFor();
             // 转换为 Base64 字符串
             log.info("生成缩略图成功,临时缩略图路径:{}",picPath);
+            Thread.sleep(1000);
             return true;
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -98,6 +99,7 @@ public class FFmepgUtil {
      * @return
      */
     public boolean generateImageThumbnail(String imagePath, String picPath){
+        log.info("生成图片缩放图中|参数|imagePath:{}|picPath:{}",imagePath,picPath);
 //        File file = new File(imagePath);
 //        if (!file.exists()) {
 //            System.err.println("路径[" + imagePath + "]对应的图片文件不存在!");
@@ -108,6 +110,7 @@ public class FFmepgUtil {
         //-f image2 表示输出格式为图像。
         //-ss 2 表示截取视频的第2秒的画面。
         //-s 700x525 表示生成图片的尺寸为 700x525。
+        picPath=DEFAULT_THUMBNAIL_PACKAGE+picPath;
         List commands = new ArrayList();
         commands.add(ffmpegPath);
         commands.add("-i");
@@ -115,22 +118,17 @@ public class FFmepgUtil {
         commands.add("-y");
         commands.add("-vf");
 //        暂时是缩放为20%
-        commands.add("scale=iw*0.2:ih*0.2");
+        commands.add("scale=iw*0.05:ih*0.05");
         commands.add("-loglevel");
         commands.add("quiet"); // 设置日志级别为 quiet
         commands.add(picPath);
         try {
             ProcessBuilder builder = new ProcessBuilder(commands);
             Process process = builder.start();
-            // 等待进程执行完成
-            int exitCode = process.waitFor();
-            if (exitCode == 0) {
-                System.out.println("调整图片大小成功");
-                return true;
-            } else {
-                System.err.println("调整图片大小失败，FFmpeg 进程退出码: " + exitCode);
-                return false;
-            }
+            process.waitFor();
+            // 转换为 Base64 字符串
+            log.info("生成缩放图成功,临时缩放图路径:{}",picPath);
+            return true;
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
             return false;

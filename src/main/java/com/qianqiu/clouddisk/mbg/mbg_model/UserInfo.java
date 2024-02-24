@@ -109,6 +109,14 @@ public class UserInfo implements Serializable {
     @Schema(description = "用户头像url")
     private String avatarUrl;
 
+    /**
+     * 头像缩小封面
+     *
+     * @mbg.generated
+     */
+    @Schema(description = "头像缩小封面")
+    private String avatarCover;
+
     private static final long serialVersionUID = 1L;
 
     public String getUserId() {
@@ -215,6 +223,14 @@ public class UserInfo implements Serializable {
         this.avatarUrl = avatarUrl;
     }
 
+    public String getAvatarCover() {
+        return avatarCover;
+    }
+
+    public void setAvatarCover(String avatarCover) {
+        this.avatarCover = avatarCover;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -234,6 +250,7 @@ public class UserInfo implements Serializable {
         sb.append(", totalSpace=").append(totalSpace);
         sb.append(", updateTime=").append(updateTime);
         sb.append(", avatarUrl=").append(avatarUrl);
+        sb.append(", avatarCover=").append(avatarCover);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

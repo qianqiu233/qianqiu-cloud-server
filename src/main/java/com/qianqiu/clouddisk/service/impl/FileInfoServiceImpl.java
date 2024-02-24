@@ -2,13 +2,18 @@ package com.qianqiu.clouddisk.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.github.pagehelper.PageHelper;
 import com.qianqiu.clouddisk.exception.CommonException;
 import com.qianqiu.clouddisk.mbg.mbg_mapper.FileInfoMapper;
+import com.qianqiu.clouddisk.mbg.mbg_mapper.UserInfoMapper;
 import com.qianqiu.clouddisk.mbg.mbg_model.FileInfo;
 import com.qianqiu.clouddisk.mbg.mbg_model.FileInfoExample;
+import com.qianqiu.clouddisk.mbg.mbg_model.UserInfo;
 import com.qianqiu.clouddisk.model.dto.*;
+import com.qianqiu.clouddisk.model.vo.UserSpaceInfoVo;
 import com.qianqiu.clouddisk.service.FileInfoService;
 import com.qianqiu.clouddisk.service.MinioService;
 import com.qianqiu.clouddisk.service.UserService;
@@ -17,6 +22,7 @@ import com.qianqiu.clouddisk.utils.Regexs.RegexUtils;
 import com.qianqiu.clouddisk.utils.commonResult.CommonPage;
 import com.qianqiu.clouddisk.utils.commonResult.CommonResult;
 import com.qianqiu.clouddisk.utils.enums.*;
+import io.minio.http.Method;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +33,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.TimeUnit;
 
 import static com.qianqiu.clouddisk.utils.Constant.DefaultConstant.*;
+import static com.qianqiu.clouddisk.utils.Constant.RedisConstant.*;
 import static com.qianqiu.clouddisk.utils.enums.FileUseFlagEnums.*;
 
 @Service
@@ -47,6 +54,8 @@ public class FileInfoServiceImpl implements FileInfoService {
     private FFmepgUtil ffmpegUtil;
     @Autowired
     private ApplicationContext applicationContext;
+    @Resource
+    private UserInfoMapper userInfoMapper;
 
     @Override
     public CommonResult<CommonPage<FileInfo>> getFileInfoList(FileInfoDTO fileInfoDTO) {
@@ -60,6 +69,7 @@ public class FileInfoServiceImpl implements FileInfoService {
         String category = fileInfoDTO.getCategory();
         String filePid = fileInfoDTO.getFilePid();
         String order = DEFAULT_SORT_FIELD + DEFAULT_DESC;
+
         if (fileName != null) {
             criteria.andFileNameLike("%" + fileName + "%");
         }
@@ -67,13 +77,13 @@ public class FileInfoServiceImpl implements FileInfoService {
             FileCategoryEnums categoryByCategoryCode = FileAboutUtil.getCategoryByCategoryCode(category);
             criteria.andFileCategoryEqualTo(categoryByCategoryCode.getCategory());
         }
-        if (filePid!=null){
+        if (filePid!=null&&fileName == null){
             criteria.andFilePidEqualTo(filePid);
         }
         criteria.andUseFlagEqualTo(USING.getFlag());
         criteria.andUserIdEqualTo(userId);
         fileInfoExample.setOrderByClause(order);
-        List<FileInfo> fileInfoList = fileInfoMapper.selectByExample(fileInfoExample);
+        List<FileInfo> fileInfoList = fileInfoMapper.selectByExampleWithBLOBs(fileInfoExample);
         return CommonResult.success(CommonPage.restPage(fileInfoList));
     }
 
@@ -108,7 +118,7 @@ public class FileInfoServiceImpl implements FileInfoService {
         String fileId = generateFileId();
         String userId = UserThreadLocal.getUserId();
         // minio创建文件夹
-        MinioUploadDTO minioUploadDTO = minioUtil.createFolder(fileName, userId);
+        MinioUploadDTO minioUploadDTO = minioService.createFolder(fileName, userId,filePid);
         FileInfo fileInfo = BeanUtil.copyProperties(minioUploadDTO, FileInfo.class);
         fileInfo.setFileId(fileId);
         fileInfo.setUserId(userId);
@@ -151,7 +161,10 @@ public class FileInfoServiceImpl implements FileInfoService {
     @Override
     public CommonResult uploadFile(String fileName, String fileMd5, Integer chunkIndex,
                                    Integer chunks, String fileId, String filePid, MultipartFile file, Long sourceFileSize, String sourceFileType) {
-        // todo 需要判断空间是否足够
+        boolean isHasMoreSpace = hasMoreSpace(sourceFileSize);
+        if (!isHasMoreSpace){
+            throw new CommonException("空间不足，该文件无法完整上传");
+        }
         UpLoadSliceFileDTO upLoadFileStatus = new UpLoadSliceFileDTO();
         //初始化为正常上传中
         upLoadFileStatus.setUpLoadFileStatus(UpLoadFileStageStatus.SLICE.getUpLoadStatus());
@@ -170,14 +183,31 @@ public class FileInfoServiceImpl implements FileInfoService {
             Date date = new Date();
             FileInfoExample fileInfoExample = new FileInfoExample();
             fileInfoExample.createCriteria().andUserIdEqualTo(userId).andFileMd5EqualTo(fileMd5);
+            //拿到所有的对应文件，找到pid是filePid目录的
             List<FileInfo> fileInfoList = fileInfoMapper.selectByExample(fileInfoExample);
             FileInfo uploadedFileInfo = fileInfoList.get(0);
+            for (FileInfo info : fileInfoList) {
+                if (info.getFilePid().equals(filePid)){
+                    uploadedFileInfo=info;
+                    break;
+                }
+            }
+            if (uploadedFileInfo.getFilePid().equals(filePid)){
+                //一样，说明是在同目录操作
+                //还需更改文件名称
+                List<String> sameFileNameList = getSameFileNameList(fileName, userId, filePid, FileFolderType.FILE.getFolderCode());
+                //获取新名字
+                String newFileName = FileAboutUtil.fileReNameByAddNum(sameFileNameList, fileName);
+                uploadedFileInfo.setFileName(newFileName);
+            }else {
+                uploadedFileInfo.setFileName(fileName);
+            }
             //设置新的fileId,
-            String newFileId = fileMd5 + "-" + DateUtil.format(date, DateUtil.HMS);
+            String newFileId = fileMd5 + "-" + MyDateUtil.format(date, MyDateUtil.HMS);
             uploadedFileInfo.setFileId(newFileId);
-            uploadedFileInfo.setFileName(fileName);
             uploadedFileInfo.setCreateTime(date);
             uploadedFileInfo.setLastUpdateTime(date);
+            uploadedFileInfo.setFilePid(filePid);
             //存入数据库
             int count = fileInfoMapper.insert(uploadedFileInfo);
             if (count == 0) {
@@ -232,17 +262,28 @@ public class FileInfoServiceImpl implements FileInfoService {
             sourceFileInfo.setLastUpdateTime(new Date());
             //合并成功，是图片，图片本身就是缩略图
             if (FileCategoryEnums.IMAGE.getCategory().equals(fileCategory)) {
-                sourceFileInfo.setFileCover(composeFileUrl);
-                sourceFileInfo.setStatus(FileStatusEnum.TRANSCODING_SUCCESS.getCode());
+                String signatureUrl = minioUtil.generatePresignedUrl(userId, minioComposeDTO.getFilePath(), Method.GET, 60, TimeUnit.SECONDS);
+                //也用Base64，先缩放
+                boolean thumbnail = ffmpegUtil.generateImageThumbnail(signatureUrl, composeFileName);
+                if (thumbnail){
+                    String thumbnailPath = DEFAULT_THUMBNAIL_PACKAGE + composeFileName;
+                    String fileCoverPath = FileAboutUtil.fileToBase64(thumbnailPath);
+                    sourceFileInfo.setFileCover(fileCoverPath);
+                    FileAboutUtil.delThumbnailPackageFileByName(composeFileName);
+                    sourceFileInfo.setStatus(FileStatusEnum.TRANSCODING_SUCCESS.getCode());
+                }
             }
             //合并成功，如果是视频，生成缩略图
-            boolean isThumbnailSuccess = ffmpegUtil.generateVideoThumbnail(composeFileUrl, composeFileName);
+            //生成临时预签名url
+            String signatureUrl = minioUtil.generatePresignedUrl(userId, minioComposeDTO.getFilePath(), Method.GET, 60, TimeUnit.SECONDS);
+            boolean isThumbnailSuccess = ffmpegUtil.generateVideoThumbnail(signatureUrl, composeFileName);
             if (isThumbnailSuccess && FileCategoryEnums.VIDEO.getCategory().equals(fileCategory)) {
                 //生成base64编码
+                //上传到minio ThumbnailSuccess
                 String thumbnailPath = DEFAULT_THUMBNAIL_PACKAGE + composeFileName;
-                String composeThumbnailBase64 = FileAboutUtil.fileToBase64(thumbnailPath);
+                String fileCoverPath = FileAboutUtil.fileToBase64(thumbnailPath);
                 //设置封面
-                sourceFileInfo.setFileCover(composeThumbnailBase64);
+                sourceFileInfo.setFileCover(fileCoverPath);
                 //删除临时缩略图  // todo 如果删除失败？不知道怎么办，设置指数？，当数量达到一定程度，整个文件夹删掉？
                 FileAboutUtil.delThumbnailPackageFileByName(composeFileName);
             }
@@ -306,18 +347,31 @@ public class FileInfoServiceImpl implements FileInfoService {
     @Override
     public UpLoadSliceFileDTO initUploadFile(String fileName, String filePid, Integer chunks, Long sourceFileSize, String sourceFileMd5, MultipartFile file, String sourceFileType) {
         //第一个分片获取到文件类型和分类数据
-        FileCategoryEnums fileCategoryType = FileAboutUtil.getFileCategoryType(sourceFileType);
+        FileCategoryEnums fileCategoryType=null;
+        String contentType = file.getContentType();
+        System.out.println(contentType);
+        if (StrUtil.isBlank(sourceFileType)){
+            fileCategoryType = FileAboutUtil.getFileCategoryType(contentType);
+        }else{
+            fileCategoryType = FileAboutUtil.getFileCategoryType(sourceFileType);
+        }
         String[] strings = FileAboutUtil.splitByLastDot(fileName);
         String fileSuffix = strings[1];
         FileTypeEnums fileType = FileAboutUtil.getFileTypeByCategory(fileCategoryType, fileSuffix);
         String userId = UserThreadLocal.getUserId();
         String fileId = sourceFileMd5;
-        MinioUploadDTO minioUtilFolder = minioUtil.createFolder("slice", userId);
-        FileInfo dbfileInfo = fileInfoMapper.selectByPrimaryKey(fileId, userId);
-        //返回
+        minioUtil.createFolder("slice", userId);
+        //在使用中的文件，我希望才能算数据库中的文件
+        FileInfoExample fileInfoExample = new FileInfoExample();
+        fileInfoExample.createCriteria()
+                .andUseFlagEqualTo(USING.getFlag())
+                .andFileIdEqualTo(fileId)
+                .andUserIdEqualTo(userId);
+        List<FileInfo> fileInfoList = fileInfoMapper.selectByExample(fileInfoExample);
         UpLoadSliceFileDTO upLoadSliceFileDTO = new UpLoadSliceFileDTO();
         //数据库存在该文件
-        if (dbfileInfo != null) {
+        if (fileInfoList.size() >0) {
+            FileInfo dbfileInfo = fileInfoList.get(0);
             upLoadSliceFileDTO = getUpLoadSliceFileStageByUseFlag(dbfileInfo);
             return upLoadSliceFileDTO;
         }
@@ -328,6 +382,7 @@ public class FileInfoServiceImpl implements FileInfoService {
             //主文件为键，带入分片，id为1.分片id从2开始
             stringRedisTemplate.opsForList().rightPush(fileId, fileId);
         } else {
+            //todo 分析有误 也可能是前面出现错误，redis没删除，数据库和minio没有文件
             //说明还没彻底上传完成,  还在上传中  ,  由于上传期间出现任何错误都会删除所有分片和数据库文件，所以如果还是存在，只有未合并一个结果
             upLoadSliceFileDTO.setFileId(fileId);
             upLoadSliceFileDTO.setStatus(UploadStatusEnums.UPLOADING.getCode());
@@ -335,7 +390,6 @@ public class FileInfoServiceImpl implements FileInfoService {
             //通知可以合并
             return upLoadSliceFileDTO;
         }
-
         FileInfo fileInfo = new FileInfo();
         fileInfo.setFileId(fileId);
         fileInfo.setUserId(userId);
@@ -367,64 +421,103 @@ public class FileInfoServiceImpl implements FileInfoService {
     public CommonResult delFileListByIds(List<String> fileIds) {
         String userId = UserThreadLocal.getUserId();
         FileInfoExample fileInfoExample = new FileInfoExample();
-        //todo 如果是目录，直接删除，连带minio的都删，
-        // todo 如果目录有东西，那就进回收站
         //做个逻辑删除就好，进回收站的啊
         fileInfoExample.createCriteria()
                 .andFileIdIn(fileIds)
                 .andUserIdEqualTo(userId)
                 .andUseFlagEqualTo(USING.getFlag());
-        FileInfo fileInfo = new FileInfo();
-        fileInfo.setUseFlag(RECYCLE.getFlag());
-        fileInfo.setLastUpdateTime(new Date());
-        int count = fileInfoMapper.updateByExampleSelective(fileInfo, fileInfoExample);
-        if (count == 0) {
-            throw new CommonException("删除文件失败，请重试");
+        List<FileInfo> fileInfoList = fileInfoMapper.selectByExample(fileInfoExample);
+        if (fileInfoList.size()>0){
+            fileInfoExample.clear();
+            List<FileInfo> allFileList=new ArrayList<>();
+            //查找所有文件
+            for (FileInfo fileInfo : fileInfoList) {
+                if (FileFolderType.DIRECTORY.getFolderCode().equals(fileInfo.getFolderType())){
+                    allFileList=getFileAndChild(fileInfo,allFileList);
+                }else{
+                    allFileList.add(fileInfo);
+                }
+            }
+            List<String> allFileIds = allFileList.stream().map(FileInfo::getFileId).toList();
+            fileInfoExample.createCriteria()
+                    .andFileIdIn(allFileIds)
+                    .andUserIdEqualTo(userId)
+                    .andUseFlagEqualTo(USING.getFlag());
+            FileInfo fileInfo = new FileInfo();
+            fileInfo.setUseFlag(RECYCLE.getFlag());
+            fileInfo.setRecoveryTime(new Date());
+            int count = fileInfoMapper.updateByExampleSelective(fileInfo, fileInfoExample);
+            if (count == 0) {
+                throw new CommonException("删除文件失败，请重试");
+            }
+            //更新空间
+            Boolean isUpdate = updateSpace(fileIds, userId, 1);
+            if (!isUpdate){
+                throw new CommonException("空间更新失败");
+            }
+            return CommonResult.success(null, "删除成功");
         }
-        //更新空间
-
-        Boolean isUpdate = updateSpace(fileIds, userId, 1);
-        if (!isUpdate){
-            throw new CommonException("空间更新失败");
-        }
-        return CommonResult.success(null, "删除成功");
+        return CommonResult.failed("删除失败");
 
 
     }
 
     @Override
     public CommonResult delFileById(String fileId) {
-        //todo 如果是目录，直接删除，连带minio的都删，
-        // todo 如果目录有东西，那就进回收站
         String userId = UserThreadLocal.getUserId();
         FileInfo fileInfo = new FileInfo();
         FileInfoExample fileInfoExample = new FileInfoExample();
-        fileInfoExample.createCriteria().andFileIdEqualTo(fileId).andUserIdEqualTo(userId).andUseFlagEqualTo(USING.getFlag());
-        fileInfo.setUseFlag(RECYCLE.getFlag());
-        fileInfo.setLastUpdateTime(new Date());
-        int count = fileInfoMapper.updateByExampleSelective(fileInfo, fileInfoExample);
-        if (count == 0) {
-            throw new CommonException("删除文件失败，请重试");
+        fileInfoExample.createCriteria()
+                .andFileIdEqualTo(fileId)
+                .andUserIdEqualTo(userId)
+                .andUseFlagEqualTo(USING.getFlag());
+        List<FileInfo> fileInfoList = fileInfoMapper.selectByExample(fileInfoExample);
+        if (fileInfoList.size()>0){
+            fileInfoExample.clear();
+            List<FileInfo> allFileList=new ArrayList<>();
+            //查找所有文件
+            for (FileInfo info : fileInfoList) {
+                if (FileFolderType.DIRECTORY.getFolderCode().equals(info.getFolderType())){
+                    allFileList=getFileAndChild(info,allFileList);
+                }else{
+                    allFileList.add(info);
+                }
+            }
+            List<String> allFileIds = allFileList.stream().map(FileInfo::getFileId).toList();
+            fileInfoExample.createCriteria()
+                    .andFileIdIn(allFileIds)
+                    .andUserIdEqualTo(userId)
+                    .andUseFlagEqualTo(USING.getFlag());
+            fileInfo.setUseFlag(RECYCLE.getFlag());
+            fileInfo.setRecoveryTime(new Date());
+            int count = fileInfoMapper.updateByExampleSelective(fileInfo, fileInfoExample);
+            if (count == 0) {
+                throw new CommonException("删除文件失败，请重试");
+            }
+            //更新空间
+            Boolean isUpdate = updateSpace(Collections.singletonList(fileId), userId, 1);
+            if (!isUpdate){
+                throw new CommonException("空间更新失败");
+            }
+            return CommonResult.success(null, "删除成功");
         }
-        //更新空间
-        Boolean isUpdate = updateSpace(Collections.singletonList(fileId), userId, 1);
-        if (!isUpdate){
-            throw new CommonException("空间更新失败");
-        }
-        return CommonResult.success(null, "删除成功");
+        return CommonResult.failed("删除失败");
     }
 
     @Override
     public CommonResult selectAllFolder(SelectAllFolderDTO selectAllFolderDTO) {
         String userId = UserThreadLocal.getUserId();
         FileInfoExample fileInfoExample = new FileInfoExample();
-        String currentFileIds = selectAllFolderDTO.getCurrentFileIds();
-        String[] splits = currentFileIds.split(",");
-        List<String> currentFileIdList = Arrays.asList(splits);
+//        String currentFileIds = selectAllFolderDTO.getCurrentFileIds();
+//        if (StrUtil.isBlank(currentFileIds)){
+//            throw new CommonException("查询失败");
+//        }
+//        String[] splits = currentFileIds.split(",");
+//        List<String> currentFileIdList = Arrays.asList(splits);
         FileInfoExample.Criteria criteria = fileInfoExample.createCriteria();
-        if (currentFileIds!=null){
-            criteria.andFileIdIn(currentFileIdList);
-        }
+//        if (currentFileIds!=null){
+//            criteria.andFileIdIn(currentFileIdList);
+//        }
         criteria.andUserIdEqualTo(userId)
                 .andFilePidEqualTo(selectAllFolderDTO.getFilePid())
                 .andFolderTypeEqualTo(FileFolderType.DIRECTORY.getFolderCode())
@@ -482,6 +575,87 @@ public class FileInfoServiceImpl implements FileInfoService {
                 .andFolderTypeEqualTo(FileFolderType.DIRECTORY.getFolderCode());
         List<FileInfo> fileInfoList = fileInfoMapper.selectByExample(fileInfoExample);
         return CommonResult.success(fileInfoList);
+    }
+
+
+
+    @Override
+    public CommonResult createDownloadToken(String fileId) {
+        String userId = UserThreadLocal.getUserId();
+        FileInfo fileInfo = fileInfoMapper.selectByPrimaryKey(fileId, userId);
+        //生成token
+        String randomPart = RandomUtil.randomString(16); // 随机部分
+        String timePart = MyDateUtil.format(new Date(), MyDateUtil.YMDHMS);  // 时间部分，这里用当前时间作为示例
+        //生成一天的预签名，然后下载一次后，删除
+        String signatureUrl = minioUtil.generatePresignedUrl(userId, fileInfo.getFilePath(), Method.GET, 30, TimeUnit.MINUTES);
+        // 将随机部分和时间部分拼接成token
+        String token = randomPart + "-" + timePart;
+        //存入redis
+        String key=USER_DOWNLOAD_KEY+token;
+        stringRedisTemplate.opsForValue().set(key,signatureUrl,DOWNLOAD_KEY_TTL, TimeUnit.MINUTES);
+        return CommonResult.success(token);
+    }
+
+    @Override
+    public List<FileInfo> getFileAndChild(FileInfo fileInfo,List<FileInfo> fileList) {
+        //先将当前目录存入
+        fileList.add(fileInfo);
+        //查找当前目录下的所有文件pid为fileId的文件
+        String fileId = fileInfo.getFileId();
+        String userId = fileInfo.getUserId();
+        Integer useFlag = fileInfo.getUseFlag();
+        FileInfoExample fileInfoExample = new FileInfoExample();
+        fileInfoExample.createCriteria()
+                .andUserIdEqualTo(userId)
+                .andFilePidEqualTo(fileId)
+                .andUseFlagEqualTo(useFlag);
+        List<FileInfo> fileInfoList = fileInfoMapper.selectByExample(fileInfoExample);
+        if (fileInfoList.size()>0){
+            //查找是否还有目录，有就递归，没有就添加到list，返回
+            for (FileInfo info : fileInfoList) {
+                if (FileFolderType.DIRECTORY.getFolderCode().equals(info.getFolderType())){
+                    return getFileAndChild(info,fileList);
+                }
+                //文件，存入list
+                fileList.add(info);
+            }
+        }
+        return fileList;
+    }
+
+    @Override
+    public boolean hasMoreSpace(Long space) {
+        Long useSpace=0L;
+        Long totalSpace=0L;
+        boolean isHasSpace = false;
+        String userId = UserThreadLocal.getUserId();
+        String key=USER_SPACE_KEY+userId;
+        String redisUserSpace = stringRedisTemplate.opsForValue().get(key);
+        if (StrUtil.isNotBlank(redisUserSpace)){
+            UserSpaceInfoVo userSpaceInfoVo = JSONUtil.toBean(redisUserSpace, UserSpaceInfoVo.class);
+            useSpace = userSpaceInfoVo.getUseSpace();
+            totalSpace = userSpaceInfoVo.getTotalSpace();
+            isHasSpace = useSpace + space > totalSpace ? false : true;
+            return isHasSpace;
+        }
+        //查询数据库
+        UserInfo userInfo = userInfoMapper.selectByPrimaryKey(userId);
+        useSpace = userInfo.getUseSpace();
+        totalSpace = userInfo.getTotalSpace();
+        isHasSpace = useSpace + space > totalSpace ? false : true;
+        return isHasSpace;
+    }
+
+    @Override
+    public CommonResult download(String dowToken) {
+        String key=USER_DOWNLOAD_KEY+dowToken;
+        String downloadUrl = stringRedisTemplate.opsForValue().get(key);
+        if (StrUtil.isBlank(downloadUrl)){
+            return CommonResult.failed("下载文件失败");
+        }
+
+        stringRedisTemplate.delete(key);
+        return CommonResult.success(downloadUrl);
     }
 
     /**
@@ -561,6 +735,21 @@ public class FileInfoServiceImpl implements FileInfoService {
                 .map(fileId -> fileInfoMapper.selectByPrimaryKey(fileId, userId))
                 .toList();
         return userService.UpdateUserSpace(fileInfoList, incOrDec);
+    }
+    private List<String> getSameFileNameList(String fileName,String userId,String filePid,Integer folderType){
+        String[] strings = FileAboutUtil.splitByLastDot(fileName);
+        String fileNamePrefix=strings[0];
+        String fileNameSuffix=strings[1];
+        FileInfoExample fileInfoExample = new FileInfoExample();
+        fileInfoExample.createCriteria()
+                .andFileNameLike(fileNamePrefix+"%"+fileNameSuffix)
+                .andFilePidEqualTo(filePid)
+                .andFolderTypeEqualTo(folderType)
+                .andUserIdEqualTo(userId)
+                .andUseFlagEqualTo(USING.getFlag());
+        List<FileInfo> fileInfoList = fileInfoMapper.selectByExample(fileInfoExample);
+        List<String> list = fileInfoList.stream().map(FileInfo::getFileName).toList();
+        return list;
     }
 
 
